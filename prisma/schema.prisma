@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String      @id @default(cuid())
+  email     String      @unique
+  name      String?
+  password  String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  shops     ShopUser[]
+}
+
+model Shop {
+  id        String      @id @default(cuid())
+  name      String
+  products  Product[]
+  users     ShopUser[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model ShopUser {
+  id        String      @id @default(cuid())
+  shopId    String
+  shop      Shop        @relation(fields: [shopId], references: [id])
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  role      String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([shopId, userId]) // Composite key for many-to-many relationship
+}
+
+model Product {
+  id         String      @id @default(cuid())
+  name       String
+  price      Int
+  shopId     String
+  shop       Shop        @relation(fields: [shopId], references: [id])
+  supplierId String
+  supplier   Supplier    @relation(fields: [supplierId], references: [id])
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model Supplier {
+  id        String      @id @default(cuid())
+  name      String
+  products  Product[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
