@@ -1,5 +1,6 @@
 // seed.ts
 
+import { saltAndHashPassword } from "@/lib/saltAndHash";
 import { PrismaClient } from "@prisma/client";
 
 const db = new PrismaClient();
@@ -12,7 +13,7 @@ async function main() {
     data: {
       email: "user1@example.com",
       name: "User One",
-      password: "hashed_password1", // Use hashed passwords in real implementations
+      password: await saltAndHashPassword("password1"), // Use hashed passwords in real implementations
     },
   });
 
@@ -20,7 +21,7 @@ async function main() {
     data: {
       email: "user2@example.com",
       name: "User Two",
-      password: "hashed_password2",
+      password: await saltAndHashPassword("password2"),
     },
   });
 
