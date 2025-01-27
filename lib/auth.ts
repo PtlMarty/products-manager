@@ -1,4 +1,4 @@
-import db from "@/lib/db";
+import db from "@/lib/db/db";
 import { schema } from "@/lib/zodSchema";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
@@ -11,37 +11,34 @@ const adapter = PrismaAdapter(db);
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter,
-  debug: true,
   providers: [
     Credentials({
       credentials: {
-        email: {},
-        password: {},
+        email: {
+          label: "Email",
+          type: "text",
+          placeholder: "example@example.com",
+        },
+        password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
         const validatedCredentials = schema.parse(credentials);
 
+        // Find user by email
         const user = await db.user.findFirst({
-          where: {
-            email: validatedCredentials.email,
-          },
+          where: { email: validatedCredentials.email },
         });
 
-        // check id the password match to the encrypted password
-
-        if (user && typeof user.password === "string") {
-          const isPasswordMatch = await bcrypt.compare(
-            validatedCredentials.password,
-            user.password
-          );
-          if (!isPasswordMatch) {
-            throw new Error("Invalid credentials.");
-          }
+        if (!user || !user.password) {
+          throw new Error("Invalid credentials.");
         }
 
-        //if user is not found, throw an error
-
-        if (!user) {
+        // Validate password
+        const isPasswordMatch = await bcrypt.compare(
+          validatedCredentials.password,
+          user.password
+        );
+        if (!isPasswordMatch) {
           throw new Error("Invalid credentials.");
         }
 

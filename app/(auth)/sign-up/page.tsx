@@ -1,6 +1,6 @@
-import { signUp } from "@/app/(auth)/sign-up/action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { signUp } from "@/lib/actions/User/signUp";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 

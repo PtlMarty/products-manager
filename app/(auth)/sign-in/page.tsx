@@ -1,14 +1,13 @@
-import { auth } from "@/lib/auth";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { executeAction } from "@/lib/actions/executeAction";
+import { getSession } from "@/lib/actions/getSession";
 import { signIn } from "@/lib/auth";
-import { executeAction } from "@/lib/executeAction";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 const Page = async () => {
-  const session = await auth();
+  const session = await getSession();
   if (session) redirect("/");
 
   return (
