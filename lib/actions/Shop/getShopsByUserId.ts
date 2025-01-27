@@ -8,11 +8,7 @@ export const getShopsByUserId = async (userId: string) => {
     //check userId match to  shopUIser
     where: { userId: userId },
     include: {
-      shop: {
-        include: {
-          products: true,
-        },
-      },
+      shop: true,
     },
   });
   if (!shops) {
