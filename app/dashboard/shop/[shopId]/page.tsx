@@ -14,7 +14,7 @@ const ShopPage = async () => {
   return (
     <div>
       {user?.email}
-      <Shops userId={user.id} />
+      <Shops userId={user.id} products={[]} />
     </div>
   );
 };
