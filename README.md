@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Supply Chain Management System
 
-## Getting Started
+A modern web application for managing supply chain operations, built with Next.js, TypeScript, and Prisma.
 
-First, run the development server:
+## Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+This supply chain management system allows businesses to:
+
+- Manage multiple shops and their products
+- Track suppliers and their associated products
+- Handle user authentication and role-based access control
+- Maintain product inventory and pricing
+
+## Tech Stack
+
+- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: PostgreSQL
+- **Authentication**: Authjs
+
+## Project Structure
+
+```
+supply-chain/
+├── app/                    # Next.js app directory (pages and routing)
+├── components/            # React components
+│   ├── dashboard/        # Dashboard-related components
+│   ├── products/         # Product management components
+│   ├── shop/            # Shop management components
+│   └── ...
+├── lib/                  # Backend utilities and actions
+│   ├── actions/         # Server actions
+│   └── db/             # Database configuration
+├── prisma/              # Database schema and migrations
+├── types/               # TypeScript type definitions
+└── utils/               # Utility functions
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Documentation Structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- [Getting Started](./getting-started.md) - Setup and installation guide
+- [Architecture](./architecture.md) - System architecture and design
+- [Database Schema](./database-schema.md) - Database structure and relationships
+- [API Documentation](./api-documentation.md) - API endpoints and usage
+- [Authentication](./authentication.md) - Authentication system details
+- [Deployment](./deployment.md) - Deployment guide and considerations
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Key Features
 
-## Learn More
+1. **Multi-tenant Architecture**
 
-To learn more about Next.js, take a look at the following resources:
+   - Support for multiple shops
+   - Role-based access control
+   - User management
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Product Management**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   - Product creation and editing
+   - Price management
+   - Supplier association
 
-## Deploy on Vercel
+3. **Supplier Management**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   - Supplier tracking
+   - Product-supplier relationships
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. **User Management**
+   - User authentication
+   - Session management
+   - Role-based permissions
