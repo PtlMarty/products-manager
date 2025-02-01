@@ -15,6 +15,7 @@ interface ProductFormProps {
   shopId: string;
   onSubmit: (product: Partial<Product>) => Promise<void>;
   trigger?: React.ReactNode;
+  title?: string;
 }
 
 const initialState = {
@@ -23,14 +24,21 @@ const initialState = {
   shopId: "",
 };
 
-export function ProductForm({ shopId, onSubmit, trigger }: ProductFormProps) {
+export function ProductForm({
+  shopId,
+  onSubmit,
+  trigger,
+  title = "Add New Product",
+}: ProductFormProps) {
   const [formData, setFormData] = useState({ ...initialState, shopId });
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsLoading(true);
 
     try {
       const validatedData = productSchema.parse(formData);
@@ -41,6 +49,8 @@ export function ProductForm({ shopId, onSubmit, trigger }: ProductFormProps) {
     } catch (error) {
       console.error("Form error:", error);
       setError(error instanceof Error ? error.message : "Invalid form data");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -62,7 +72,7 @@ export function ProductForm({ shopId, onSubmit, trigger }: ProductFormProps) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Product</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
@@ -111,15 +121,17 @@ export function ProductForm({ shopId, onSubmit, trigger }: ProductFormProps) {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="px-4 py-2 border rounded hover:bg-gray-100 transition-colors"
+              disabled={isLoading}
+              className="px-4 py-2 border rounded hover:bg-gray-100 transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+              disabled={isLoading}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors disabled:opacity-50"
             >
-              Create Product
+              {isLoading ? "Creating..." : "Create Product"}
             </button>
           </div>
         </form>

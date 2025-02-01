@@ -3,10 +3,7 @@ type Options<T> = {
   successMessage?: string;
 };
 
-export async function executeAction<T>({
-  actionFn,
-  successMessage = "Action completed successfully",
-}: Options<T>): Promise<T> {
+export async function executeAction<T>({ actionFn }: Options<T>): Promise<T> {
   try {
     const result = await actionFn();
     return result;
