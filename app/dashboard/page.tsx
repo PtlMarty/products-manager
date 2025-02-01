@@ -27,11 +27,7 @@ const DashboardPage = async () => {
         <div className="flex flex-col justify-center">
           {shops.map((shop) => (
             <div className="m-auto w-full" key={shop.id}>
-              <DashboardGlobal
-                userId={user?.id as string}
-                shops={[shop]}
-                products={products}
-              />
+              <DashboardGlobal />
             </div>
           ))}
           <div>

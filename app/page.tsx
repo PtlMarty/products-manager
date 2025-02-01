@@ -33,20 +33,28 @@ export default async function Home() {
   );
 
   return (
-    <div>
-      {session.user.email}
-      <Shops userId={user} products={products.flat()} />
-      {/* Flatten the products array */}
-      {shops.map((shop) => (
-        <div key={shop.id}>
-          <Link
-            href={`/dashboard/shop/${shop.id}`}
-            className="text-blue-500 hover:text-blue-700 bg-slate-400 p-2 rounded-md border"
-          >
-            {shop.name}
-          </Link>
-        </div>
-      ))}
+    <div className="flex flex-col gap-4">
+      <div>
+        <Shops userId={user} products={products.flat()} shops={shops} />
+      </div>
+      <div>
+        {shops.length > 0 ? (
+          shops.map((shop) => (
+            <div key={shop.id}>
+              <Link
+                href={`/dashboard/shop/${shop.id}`}
+                className="text-gray-800 bg-violet-500 p-2 rounded-md border"
+              >
+                {shop.name}
+              </Link>
+            </div>
+          ))
+        ) : (
+          <div className="text-gray-600 text-center">
+            Aucun magasin disponible.
+          </div>
+        )}
+      </div>
     </div>
   );
 }
