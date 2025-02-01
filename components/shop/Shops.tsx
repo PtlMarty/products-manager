@@ -1,62 +1,59 @@
 "use client";
 
-import CreateProduct from "@/components/products/CreateProduct";
-import DeleteProduct from "@/components/products/DeleteProduct";
-import { ShopProducts } from "@/components/shop/ShopProducts";
-import { productSchema } from "@/types/product";
+import {
+  createProduct,
+  deleteProduct,
+} from "@/lib/actions/products/productsActions";
 import { Product, Shop } from "@prisma/client";
 import { useState } from "react";
+import { ShopProducts } from "./ShopProducts";
 
 interface ShopsProps {
-  userId: string;
-  products: Product[];
   shops: Shop[];
+  initialProducts: Product[];
+  userId: string;
 }
 
-export default function Shops({
-  products: initialProducts,
-  shops,
-}: ShopsProps) {
+export function Shops({ shops, initialProducts }: ShopsProps) {
   const [products, setProducts] = useState<Product[]>(initialProducts);
 
-  const handleCreateProduct = async (product: Product) => {
+  const handleCreateProduct = async (productData: Partial<Product>) => {
     try {
-      const validatedProduct = productSchema.parse({
-        ...product,
-        supplierId: product.supplierId?.trim() || "",
-      });
+      console.log("Creating product with data:", productData);
+      const result = await createProduct(productData);
+      console.log("Create product result:", result);
 
-      const newProduct = await CreateProduct({
-        product: {
-          ...validatedProduct,
-          supplierId: validatedProduct.supplierId || "",
-          id: "",
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      });
-
-      setProducts((prevProducts) => [...prevProducts, newProduct]);
+      if (result.success && result.data) {
+        setProducts((prev) => {
+          const newProducts = [...prev, result.data as Product];
+          console.log("Updating products state:", newProducts);
+          return newProducts;
+        });
+      } else {
+        console.error("Failed to create product:", result.message);
+      }
     } catch (error) {
-      console.error("Error creating product:", error);
+      console.error("Failed to create product:", error);
     }
   };
 
-  const handleDelete = async (productId: string) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      try {
-        await DeleteProduct(productId);
-        setProducts((prevProducts) =>
-          prevProducts.filter((product) => product.id !== productId)
+  const handleDeleteProduct = async (productId: string) => {
+    if (!window.confirm("Are you sure?")) return;
+
+    try {
+      const result = await deleteProduct(productId);
+      if (result.success) {
+        setProducts(
+          (prev) => prev.filter((p) => p.id !== productId) as Product[]
         );
-      } catch (error) {
-        console.error("Error deleting product:", error);
       }
+    } catch (error) {
+      console.error("Failed to delete product:", error);
     }
   };
 
   if (!shops?.length) {
-    return <div className="text-gray-600 text-center">No shops available.</div>;
+    return <div className="text-gray-600">No shops available.</div>;
   }
 
   return (
@@ -67,9 +64,11 @@ export default function Shops({
           shop={shop}
           products={products.filter((p) => p.shopId === shop.id)}
           onCreateProduct={handleCreateProduct}
-          onDeleteProduct={handleDelete}
+          onDeleteProduct={handleDeleteProduct}
         />
       ))}
     </div>
   );
 }
+
+export default Shops;

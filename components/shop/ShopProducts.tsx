@@ -1,11 +1,11 @@
-import NewProduct from "@/components/products/NewProduct";
+import { NewProduct } from "@/components/products/NewProduct";
 import { ProductsTable } from "@/components/products/ProductsTable";
 import { Product, Shop } from "@prisma/client";
 
 interface ShopProductsProps {
   shop: Shop;
   products: Product[];
-  onCreateProduct: (product: Product) => void;
+  onCreateProduct: (product: Partial<Product>) => void;
   onDeleteProduct: (id: string) => void;
 }
 
@@ -24,7 +24,12 @@ export function ShopProducts({
         <p className="text-gray-500">No products available for this shop.</p>
       )}
       <div className="flex justify-center mt-4">
-        <NewProduct handleCreateProduct={onCreateProduct} shopId={shop.id} />
+        <NewProduct
+          handleCreateProduct={async (product) => {
+            await onCreateProduct(product);
+          }}
+          shopId={shop.id}
+        />
       </div>
     </div>
   );

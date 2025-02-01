@@ -35,7 +35,7 @@ export default async function Home() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <Shops userId={user} products={products.flat()} shops={shops} />
+        <Shops initialProducts={products.flat()} shops={shops} userId={user} />
       </div>
       <div>
         {shops.length > 0 ? (

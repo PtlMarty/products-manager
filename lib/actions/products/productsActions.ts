@@ -1,33 +1,47 @@
+"use server";
+
+import { executeAction } from "@/lib/actions/executeAction";
 import db from "@/lib/db/db";
+import { ProductActionResult, productSchema } from "@/types/product";
 import { Product } from "@prisma/client";
 
-export const deleteProduct = async (productId: string) => {
-  try {
-    return await db.product.delete({
-      where: { id: productId },
-    });
-  } catch (error) {
-    console.error("Error deleting product:", error);
-    throw error;
-  }
-};
+export async function createProduct(
+  product: Partial<Product>
+): Promise<ProductActionResult> {
+  return executeAction({
+    actionFn: async () => {
+      const validatedData = productSchema.parse(product);
 
-export const createProduct = async (product: Product) => {
-  if (!product) {
-    throw new Error("Product data is required");
-  }
+      const newProduct = await db.product.create({
+        data: {
+          ...validatedData,
+          supplierId: "cm6dgtclx0008uuvldzyc11ix", // Hardcoded supplierId
+        },
+      });
 
-  try {
-    return await db.product.create({
-      data: {
-        name: product.name,
-        price: product.price,
-        supplierId: product.supplierId,
-        shopId: product.shopId,
-      },
-    });
-  } catch (error) {
-    console.error("Error in createProduct:", error);
-    throw error;
-  }
-};
+      return {
+        success: true,
+        message: "Product created successfully",
+        data: newProduct,
+      };
+    },
+  });
+}
+
+export async function deleteProduct(
+  productId: string
+): Promise<ProductActionResult> {
+  return executeAction({
+    actionFn: async () => {
+      const deletedProduct = await db.product.delete({
+        where: { id: productId },
+      });
+
+      return {
+        success: true,
+        message: "Product deleted successfully",
+        data: deletedProduct,
+      };
+    },
+  });
+}

@@ -7,12 +7,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { productSchema } from "@/types/product";
 import { Product } from "@prisma/client";
 import React, { useState } from "react";
 
-interface NewProductProps {
-  handleCreateProduct: (product: Product) => Promise<void>;
+interface ProductFormProps {
   shopId: string;
+  onSubmit: (product: Partial<Product>) => Promise<void>;
+  trigger?: React.ReactNode;
 }
 
 const initialState = {
@@ -21,29 +23,24 @@ const initialState = {
   shopId: "",
 };
 
-export function NewProduct({ handleCreateProduct, shopId }: NewProductProps) {
+export function ProductForm({ shopId, onSubmit, trigger }: ProductFormProps) {
   const [formData, setFormData] = useState({ ...initialState, shopId });
   const [open, setOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setIsLoading(true);
 
     try {
-      console.log("Submitting form data:", formData);
-      await handleCreateProduct(formData as Product);
+      const validatedData = productSchema.parse(formData);
+      console.log("Validated Product Data:", validatedData);
+      await onSubmit(validatedData);
       setFormData({ ...initialState, shopId });
       setOpen(false);
     } catch (error) {
-      console.error("Form submission error:", error);
-      setError(
-        error instanceof Error ? error.message : "Failed to create product"
-      );
-    } finally {
-      setIsLoading(false);
+      console.error("Form error:", error);
+      setError(error instanceof Error ? error.message : "Invalid form data");
     }
   };
 
@@ -57,9 +54,11 @@ export function NewProduct({ handleCreateProduct, shopId }: NewProductProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-          Add Product
-        </button>
+        {trigger || (
+          <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            Add Product
+          </button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -85,7 +84,6 @@ export function NewProduct({ handleCreateProduct, shopId }: NewProductProps) {
               onChange={handleChange}
               placeholder="Product Name"
               required
-              disabled={isLoading}
               className="mt-1 block w-full border p-2 rounded focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -106,7 +104,6 @@ export function NewProduct({ handleCreateProduct, shopId }: NewProductProps) {
               onChange={handleChange}
               placeholder="Price"
               required
-              disabled={isLoading}
               className="mt-1 block w-full border p-2 rounded focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -114,17 +111,15 @@ export function NewProduct({ handleCreateProduct, shopId }: NewProductProps) {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              disabled={isLoading}
               className="px-4 py-2 border rounded hover:bg-gray-100 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isLoading}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors disabled:opacity-50"
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
             >
-              {isLoading ? "Creating..." : "Create Product"}
+              Create Product
             </button>
           </div>
         </form>

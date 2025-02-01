@@ -1,9 +1,9 @@
 "use server";
 
 import { createProduct } from "@/lib/actions/products/productsActions";
-import { CreateProductProps } from "@/types/product";
+import { ProductFormData } from "@/types/product";
 
-const CreateProduct = async ({ product }: CreateProductProps) => {
+const CreateProduct = async ({ product }: { product: ProductFormData }) => {
   if (!product) {
     throw new Error("Product data is required");
   }
