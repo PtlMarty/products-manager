@@ -3,12 +3,12 @@ import { Product } from "@prisma/client";
 
 export const deleteProduct = async (productId: string) => {
   try {
-    const product = await db.product.delete({
+    return await db.product.delete({
       where: { id: productId },
     });
-    return product;
   } catch (error) {
     console.error("Error deleting product:", error);
+    throw error;
   }
 };
 
@@ -18,8 +18,7 @@ export const createProduct = async (product: Product) => {
   }
 
   try {
-    console.log("Attempting to create product:", product);
-    const newProduct = await db.product.create({
+    return await db.product.create({
       data: {
         name: product.name,
         price: product.price,
@@ -27,7 +26,6 @@ export const createProduct = async (product: Product) => {
         shopId: product.shopId,
       },
     });
-    return newProduct;
   } catch (error) {
     console.error("Error in createProduct:", error);
     throw error;

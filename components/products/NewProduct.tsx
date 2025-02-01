@@ -1,25 +1,28 @@
+"use client";
+
 import { Product } from "@prisma/client";
 import React, { useState } from "react";
 
-type NewProductProps = {
+interface NewProductProps {
   handleCreateProduct: (product: Product) => void;
   shopId: string;
+}
+
+const initialProductState = {
+  name: "",
+  price: 0,
+  supplierId: "cm6dgtcho0007uuvltyyw15zu",
+  shopId: "",
 };
 
 const NewProduct: React.FC<NewProductProps> = ({
   handleCreateProduct,
   shopId,
 }) => {
-  const [product, setProduct] = useState({
-    name: "",
-    price: 0,
-    supplierId: "cm6dgtcho0007uuvltyyw15zu",
-    shopId,
-  });
+  const [product, setProduct] = useState({ ...initialProductState, shopId });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting product:", product);
     handleCreateProduct(product as Product);
   };
 
@@ -37,7 +40,7 @@ const NewProduct: React.FC<NewProductProps> = ({
         onChange={handleChange}
         placeholder="Product Name"
         required
-        className="border p-2"
+        className="border p-2 rounded"
       />
       <input
         name="price"
@@ -46,7 +49,7 @@ const NewProduct: React.FC<NewProductProps> = ({
         onChange={handleChange}
         placeholder="Price"
         required
-        className="border p-2"
+        className="border p-2 rounded"
       />
       <input
         hidden
@@ -56,7 +59,7 @@ const NewProduct: React.FC<NewProductProps> = ({
       />
       <button
         type="submit"
-        className="bg-blue-500 text-white px-4 py-2 rounded"
+        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
       >
         Create Product
       </button>
