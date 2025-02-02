@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  createProduct,
-  deleteProduct,
-} from "@/lib/actions/products/productsActions";
+import { useProducts } from "@/lib/hooks/useProducts";
 import { Product, Shop } from "@prisma/client";
 import { CreditCard, ShoppingBag, TrendingUp } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -43,7 +40,7 @@ interface MetricCardProps {
   title: string;
   value: string | number;
   subtitle: string;
-  color: "blue" | "emerald" | "rose";
+  color: string;
 }
 
 const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#ff0000"];
@@ -83,12 +80,8 @@ const DashboardGlobal = ({
   shops,
   products: initialProducts,
 }: DashboardGlobalProps) => {
-  const [products, setProducts] = useState<Product[]>(
-    [...initialProducts].sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    )
-  );
+  const { products, handleDeleteProduct, handleCreateProduct } =
+    useProducts(initialProducts);
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     monthlyData: [],
     categoryData: [],
@@ -150,28 +143,6 @@ const DashboardGlobal = ({
     calculateDashboardData(products);
   }, [products, calculateDashboardData]);
 
-  // Handle product deletion
-  const handleDeleteProduct = async (productId: string) => {
-    if (!window.confirm("Are you sure?")) return;
-
-    try {
-      const result = await deleteProduct(productId);
-      if (result.success) {
-        const updatedProducts = products.filter((p) => p.id !== productId);
-        setProducts(updatedProducts);
-      }
-    } catch (error) {
-      console.error("Failed to delete product:", error);
-    }
-  };
-
-  const handleCreateProduct = async (productData: Partial<Product>) => {
-    const result = await createProduct(productData);
-    if (result.success && result.data) {
-      setProducts([...products, result.data]);
-    }
-  };
-
   const getDisplayProducts = useCallback(() => {
     return products
       .sort(
@@ -212,14 +183,14 @@ const DashboardGlobal = ({
           title="Total Value"
           value={`$${metrics.totalValue.toLocaleString()}`}
           subtitle="Combined Value"
-          color="emerald"
+          color="green"
         />
         <MetricCard
           icon={TrendingUp}
           title="Average Value"
           value={`$${metrics.avgValue.toLocaleString()}`}
           subtitle="Per Product"
-          color="rose"
+          color="orange"
         />
       </div>
 

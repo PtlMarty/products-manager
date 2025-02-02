@@ -14,7 +14,9 @@ import React, { useState } from "react";
 
 interface ProductFormProps {
   shopId: string;
-  onSubmit: (product: Partial<Product>) => Promise<void>;
+  onSubmit: (
+    product: Partial<Product>
+  ) => Promise<{ success: boolean; data?: Product; error?: Error }>;
   trigger?: React.ReactNode;
   title?: string;
   className?: string;

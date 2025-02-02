@@ -5,8 +5,10 @@ import { ProductForm } from "../products/ProductForm";
 interface ShopProductsProps {
   shop: Shop;
   products: Product[];
-  onCreateProduct: (product: Partial<Product>) => Promise<void>;
-  onDeleteProduct: (id: string) => void;
+  onCreateProduct: (
+    product: Partial<Product>
+  ) => Promise<{ success: boolean; data?: Product; error?: Error }>;
+  onDeleteProduct: (id: string) => Promise<{ success: boolean; error?: Error }>;
 }
 
 export function ShopProducts({

@@ -2,7 +2,7 @@ import { Product } from "@prisma/client";
 
 interface ProductsTableProps {
   products: Product[];
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Promise<{ success: boolean; error?: Error }>;
   className?: string;
 }
 
