@@ -48,7 +48,7 @@ export default async function Home() {
           shops.map((shop) => (
             <div key={shop.id}>
               <Link
-                href={`/dashboard/shop/${shop.id}`}
+                href={`/dashboard/shops/${shop.id}`}
                 className="text-gray-800 bg-violet-500 p-2 rounded-md border"
               >
                 {shop.name}
