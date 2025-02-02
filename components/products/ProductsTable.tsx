@@ -3,11 +3,16 @@ import { Product } from "@prisma/client";
 interface ProductsTableProps {
   products: Product[];
   onDelete: (id: string) => void;
+  className?: string;
 }
 
-export function ProductsTable({ products, onDelete }: ProductsTableProps) {
+export function ProductsTable({
+  products,
+  onDelete,
+  className,
+}: ProductsTableProps) {
   return (
-    <div className="overflow-x-auto bg-white shadow rounded-lg">
+    <div className={`overflow-x-auto bg-white shadow rounded-lg ${className}`}>
       <table className="min-w-full border border-gray-300">
         <thead className="bg-gray-100">
           <tr>

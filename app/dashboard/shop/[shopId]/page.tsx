@@ -1,21 +1,39 @@
 import DashboardGlobal from "@/components/dashboard/DashboardGlobal";
+import { getProductsByShopId } from "@/lib/actions/Shop/getProductsByShopId";
+import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
+import { getSession } from "@/lib/actions/getSession";
 import { redirect } from "next/navigation";
 
 // TODO: Add a dashboard Shop Page with all data from specific shop with shopId
 
-const ShopPage = async ({
-  params,
-}: {
-  params: { shopId: string; userId: string };
-}) => {
-  const user = params.userId; // Access user id from session
+interface PageProps {
+  params: Promise<{ shopId: string }>;
+}
+
+const ShopPage = async ({ params }: PageProps) => {
+  const { shopId } = await params;
+  const session = await getSession();
+  const user = session?.user;
+
   if (!user) {
-    redirect("/sign-in"); // Redirect if user is not found
+    redirect("/sign-in");
   }
+
+  // Get all shops to find the current one
+  const shops = await getShopsByUserId(user.id);
+  const currentShop = shops.find((shop) => shop.id === shopId);
+
+  if (!currentShop) {
+    return <div>Shop not found</div>;
+  }
+
+  // Get products for this specific shop
+  const products = await getProductsByShopId(shopId);
+
   return (
-    <div>
-      {user}
-      <DashboardGlobal />
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-6">{currentShop.name} Dashboard</h1>
+      <DashboardGlobal shops={[currentShop]} products={products} />
     </div>
   );
 };

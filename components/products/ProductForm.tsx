@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { productSchema } from "@/types/product";
 import { Product } from "@prisma/client";
+import { Plus } from "lucide-react";
 import React, { useState } from "react";
 
 interface ProductFormProps {
@@ -16,6 +17,7 @@ interface ProductFormProps {
   onSubmit: (product: Partial<Product>) => Promise<void>;
   trigger?: React.ReactNode;
   title?: string;
+  className?: string;
 }
 
 const initialState = {
@@ -29,6 +31,7 @@ export function ProductForm({
   onSubmit,
   trigger,
   title = "Add New Product",
+  className,
 }: ProductFormProps) {
   const [formData, setFormData] = useState({ ...initialState, shopId });
   const [open, setOpen] = useState(false);
@@ -65,8 +68,10 @@ export function ProductForm({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-            Add Product
+          <button
+            className={`bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 ${className}`}
+          >
+            <Plus />
           </button>
         )}
       </DialogTrigger>

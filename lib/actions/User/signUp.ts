@@ -5,7 +5,11 @@ import db from "@/lib/db/db";
 import { schema } from "@/lib/zodSchema";
 import bcrypt from "bcryptjs";
 
-const signUp = async (formData: FormData) => {
+type SignUpResult = {
+  success: boolean;
+};
+
+const signUp = async (formData: FormData): Promise<SignUpResult> => {
   return executeAction({
     actionFn: async () => {
       const email = formData.get("email") as string | null;
@@ -23,6 +27,8 @@ const signUp = async (formData: FormData) => {
           password: hashedPassword,
         },
       });
+
+      return { success: true };
     },
     successMessage: "Signed up successfully",
   });
