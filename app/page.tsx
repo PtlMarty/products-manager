@@ -3,9 +3,13 @@ import Shops from "@/components/shop/Shops";
 import { getProductsByShopId } from "@/lib/actions/Shop/getProductsByShopId";
 import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
 import { getSession } from "@/lib/actions/getSession";
+import { getSuppliers } from "@/lib/actions/suppliers/supplierActions";
 import { Product } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+
+const PRODUCTS_LIMIT = 6;
+
 // Define the Shop type
 
 export default async function Home() {
@@ -20,24 +24,26 @@ export default async function Home() {
   const user = session.user.id;
   // Fetch shops
   const shops = await getShopsByUserId(user);
+  const suppliers = await getSuppliers();
   //get products by shop id dynamically
   const products = await Promise.all(
     shops.map(async (shop) => {
-      const productsArray: Product[] = [];
-      const products = await getProductsByShopId(shop.id);
-      products.forEach((product) => {
-        productsArray.push(product);
-      });
-      return productsArray;
+      const shopProducts = await getProductsByShopId(shop.id);
+      return shopProducts
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+        .slice(0, PRODUCTS_LIMIT);
     })
   );
+  const getDisplayProducts = (products: Product[]) => {
+    return products;
+  };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div>
-        <Shops initialProducts={products.flat()} shops={shops} userId={user} />
-      </div>
-      <div>
+    <div className="flex flex-col gap-2 mt-3">
+      <div className="flex gap-2">
         {shops.length > 0 ? (
           shops.map((shop) => (
             <div key={shop.id}>
@@ -55,6 +61,12 @@ export default async function Home() {
           </div>
         )}
       </div>
+      <Shops
+        initialProducts={getDisplayProducts(products.flat())}
+        shops={shops}
+        userId={user}
+        suppliers={suppliers}
+      />
     </div>
   );
 }

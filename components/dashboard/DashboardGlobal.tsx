@@ -1,7 +1,7 @@
 "use client";
 
 import { useProducts } from "@/lib/hooks/useProducts";
-import { Product, Shop } from "@prisma/client";
+import { Product, Shop, Supplier } from "@prisma/client";
 import { CreditCard, ShoppingBag, TrendingUp } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -23,6 +23,7 @@ import { ProductsTable } from "../products/ProductsTable";
 interface DashboardGlobalProps {
   shops: Shop[];
   products: Product[];
+  suppliers: Supplier[];
 }
 
 interface DashboardData {
@@ -79,6 +80,7 @@ const ChartCard = ({
 const DashboardGlobal = ({
   shops,
   products: initialProducts,
+  suppliers,
 }: DashboardGlobalProps) => {
   const { products, handleDeleteProduct, handleCreateProduct } =
     useProducts(initialProducts);
@@ -161,11 +163,13 @@ const DashboardGlobal = ({
           products={getDisplayProducts()}
           onDelete={handleDeleteProduct}
           className="w-full"
+          suppliers={suppliers}
         />
         <ProductForm
           shopId={shops[0].id}
           onSubmit={handleCreateProduct}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-fit"
+          suppliers={suppliers}
         />
       </div>
 
@@ -181,14 +185,14 @@ const DashboardGlobal = ({
         <MetricCard
           icon={CreditCard}
           title="Total Value"
-          value={`$${metrics.totalValue.toLocaleString()}`}
+          value={`¥${metrics.totalValue.toLocaleString()}`}
           subtitle="Combined Value"
           color="green"
         />
         <MetricCard
           icon={TrendingUp}
           title="Average Value"
-          value={`$${metrics.avgValue.toLocaleString()}`}
+          value={`¥${metrics.avgValue.toLocaleString()}`}
           subtitle="Per Product"
           color="orange"
         />
@@ -203,7 +207,7 @@ const DashboardGlobal = ({
               <YAxis />
               <Tooltip
                 formatter={(value: number) => [
-                  `$${value.toLocaleString()}`,
+                  `¥${value.toLocaleString()}`,
                   "Sales",
                 ]}
               />

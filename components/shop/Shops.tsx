@@ -1,16 +1,17 @@
 "use client";
 
 import { useProducts } from "@/lib/hooks/useProducts";
-import { Product, Shop } from "@prisma/client";
+import { Product, Shop, Supplier } from "@prisma/client";
 import { ShopProducts } from "./ShopProducts";
 
 interface ShopsProps {
   shops: Shop[];
   initialProducts: Product[];
+  suppliers: Supplier[];
   userId: string;
 }
 
-export function Shops({ shops, initialProducts }: ShopsProps) {
+export function Shops({ shops, initialProducts, suppliers }: ShopsProps) {
   const { products, handleCreateProduct, handleDeleteProduct } =
     useProducts(initialProducts);
 
@@ -19,7 +20,7 @@ export function Shops({ shops, initialProducts }: ShopsProps) {
   }
 
   return (
-    <div className="p-6 bg-gray-100">
+    <div className="flex flex-col gap-4 bg-gray-100">
       {shops.map((shop) => (
         <ShopProducts
           key={shop.id}
@@ -27,6 +28,7 @@ export function Shops({ shops, initialProducts }: ShopsProps) {
           products={products.filter((p) => p.shopId === shop.id)}
           onCreateProduct={handleCreateProduct}
           onDeleteProduct={handleDeleteProduct}
+          suppliers={suppliers}
         />
       ))}
     </div>

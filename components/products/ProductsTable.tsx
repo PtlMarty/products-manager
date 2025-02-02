@@ -1,13 +1,15 @@
-import { Product } from "@prisma/client";
+import { Product, Supplier } from "@prisma/client";
 
 interface ProductsTableProps {
   products: Product[];
+  suppliers: Supplier[];
   onDelete: (id: string) => Promise<{ success: boolean; error?: Error }>;
   className?: string;
 }
 
 export function ProductsTable({
   products,
+  suppliers,
   onDelete,
   className,
 }: ProductsTableProps) {
@@ -27,8 +29,10 @@ export function ProductsTable({
           {products.map((product) => (
             <tr key={product.id} className="border-b hover:bg-gray-50">
               <td className="px-4 py-2 border">{product.name}</td>
-              <td className="px-4 py-2 border">${product.price}</td>
-              <td className="px-4 py-2 border">{product.supplierId}</td>
+              <td className="px-4 py-2 border">¥{product.price}</td>
+              <td className="px-4 py-2 border">
+                {suppliers.find((s) => s.id === product.supplierId)?.name}
+              </td>
               <td className="px-4 py-2 border">
                 {new Date(product.createdAt).toLocaleDateString()}
               </td>

@@ -13,10 +13,7 @@ export async function createProduct(
       const validatedData = productSchema.parse(product);
 
       const newProduct = await db.product.create({
-        data: {
-          ...validatedData,
-          supplierId: "cm6dgtclx0008uuvldzyc11ix", // Hardcoded supplierId
-        },
+        data: validatedData,
       });
 
       return {

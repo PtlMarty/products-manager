@@ -8,12 +8,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { productSchema } from "@/types/product";
-import { Product } from "@prisma/client";
+import { Product, Supplier } from "@prisma/client";
 import { Plus } from "lucide-react";
 import React, { useState } from "react";
 
 interface ProductFormProps {
   shopId: string;
+  suppliers: Supplier[];
   onSubmit: (
     product: Partial<Product>
   ) => Promise<{ success: boolean; data?: Product; error?: Error }>;
@@ -26,10 +27,12 @@ const initialState = {
   name: "",
   price: 0,
   shopId: "",
+  supplierId: "",
 };
 
 export function ProductForm({
   shopId,
+  suppliers,
   onSubmit,
   trigger,
   title = "Add New Product",
@@ -59,7 +62,9 @@ export function ProductForm({
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     const newValue = name === "price" ? parseFloat(value) || 0 : value;
     setFormData((prev) => ({ ...prev, [name]: newValue }));
@@ -123,6 +128,29 @@ export function ProductForm({
               required
               className="mt-1 block w-full border p-2 rounded focus:ring-blue-500 focus:border-blue-500"
             />
+          </div>
+          <div>
+            <label
+              htmlFor="supplierId"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Supplier
+            </label>
+            <select
+              id="supplierId"
+              name="supplierId"
+              value={formData.supplierId}
+              onChange={handleChange}
+              required
+              className="mt-1 block w-full border p-2 rounded focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select a supplier</option>
+              {suppliers.map((supplier) => (
+                <option key={supplier.id} value={supplier.id}>
+                  {supplier.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="flex justify-end space-x-2">
             <button

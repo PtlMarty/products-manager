@@ -2,6 +2,7 @@ import DashboardGlobal from "@/components/dashboard/DashboardGlobal";
 import { getProductsByShopId } from "@/lib/actions/Shop/getProductsByShopId";
 import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
 import { getSession } from "@/lib/actions/getSession";
+import { getSuppliers } from "@/lib/actions/suppliers/supplierActions";
 // TODO: Add a Dashboard Page with all data from shops and products
 
 const DashboardPage = async () => {
@@ -25,6 +26,8 @@ const DashboardPage = async () => {
   // Flatten the array of arrays into a single array of products
   const products = allProducts.flat();
 
+  const suppliers = await getSuppliers();
+
   return (
     <div className="flex flex-col gap-10">
       <div className="flex flex-col text-center">
@@ -41,7 +44,11 @@ const DashboardPage = async () => {
       </div>
       <div className="flex flex-col justify-center">
         <div className="m-auto w-full">
-          <DashboardGlobal shops={shops} products={products} />
+          <DashboardGlobal
+            shops={shops}
+            products={products}
+            suppliers={suppliers}
+          />
         </div>
         <div>
           <div>Charts</div>

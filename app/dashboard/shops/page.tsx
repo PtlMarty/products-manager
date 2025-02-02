@@ -12,7 +12,7 @@ const ShopsPage = async () => {
     <div>
       {shops.map((shop) => (
         <div key={shop.id}>
-          <Link href={`/dashboard/shop/${shop.id}`} className="text-blue-500">
+          <Link href={`/dashboard/shops/${shop.id}`} className="text-blue-500">
             {shop.name}
           </Link>
         </div>
