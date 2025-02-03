@@ -25,7 +25,7 @@ const DashboardPage = async () => {
 
   // Flatten the array of arrays into a single array of products
   const products = allProducts.flat();
-
+  // Fetch all suppliers
   const suppliers = await getSuppliers();
 
   return (

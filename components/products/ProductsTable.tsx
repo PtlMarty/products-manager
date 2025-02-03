@@ -1,8 +1,9 @@
-import { Product, Supplier } from "@prisma/client";
+import { Product, Shop, Supplier } from "@prisma/client";
 
 interface ProductsTableProps {
   products: Product[];
   suppliers: Supplier[];
+  shops: Shop[];
   onDelete: (id: string) => Promise<{ success: boolean; error?: Error }>;
   className?: string;
 }
@@ -10,6 +11,7 @@ interface ProductsTableProps {
 export function ProductsTable({
   products,
   suppliers,
+  shops,
   onDelete,
   className,
 }: ProductsTableProps) {
@@ -20,6 +22,7 @@ export function ProductsTable({
           <tr>
             <th className="px-4 py-2 border text-left">Product Name</th>
             <th className="px-4 py-2 border text-left">Price ($)</th>
+            <th className="px-4 py-2 border text-left">Shop</th>
             <th className="px-4 py-2 border text-left">Supplier</th>
             <th className="px-4 py-2 border text-left">Created At</th>
             <th className="px-4 py-2 border text-left">Actions</th>
@@ -30,6 +33,9 @@ export function ProductsTable({
             <tr key={product.id} className="border-b hover:bg-gray-50">
               <td className="px-4 py-2 border">{product.name}</td>
               <td className="px-4 py-2 border">¥{product.price}</td>
+              <td className="px-4 py-2 border">
+                {shops.find((s) => s.id === product.shopId)?.name}
+              </td>
               <td className="px-4 py-2 border">
                 {suppliers.find((s) => s.id === product.supplierId)?.name}
               </td>

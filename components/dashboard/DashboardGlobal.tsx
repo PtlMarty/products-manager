@@ -1,17 +1,16 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { Product, Shop, Supplier } from "@prisma/client";
 import { CreditCard, ShoppingBag, TrendingUp } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
   Area,
   AreaChart,
   Bar,
   BarChart,
-  Cell,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -44,7 +43,6 @@ interface MetricCardProps {
   color: string;
 }
 
-const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#ff0000"];
 const PRODUCTS_LIMIT = 6;
 
 const MetricCard = ({
@@ -64,16 +62,17 @@ const MetricCard = ({
   </div>
 );
 
-const ChartCard = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) => (
-  <div className="bg-white p-4 rounded-lg shadow">
-    <h3 className="text-sm font-medium mb-4">{title}</h3>
-    <div className="h-[200px]">{children}</div>
+const EmptyState = () => (
+  <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
+    <h2 className="text-2xl font-semibold text-gray-700">
+      Welcome to your Dashboard
+    </h2>
+    <p className="text-gray-500">
+      You don&apos;t have any shops yet. Create one to get started!
+    </p>
+    <Button asChild>
+      <Link href="/dashboard/shops">Create Shop</Link>
+    </Button>
   </div>
 );
 
@@ -87,74 +86,86 @@ const DashboardGlobal = ({
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     monthlyData: [],
     categoryData: [],
-    metrics: { totalProducts: 0, totalValue: 0, avgValue: 0 },
+    metrics: {
+      totalProducts: 0,
+      totalValue: 0,
+      avgValue: 0,
+    },
   });
 
-  const calculateDashboardData = useCallback(
-    (currentProducts: Product[]) => {
-      const totalValue =
-        currentProducts.reduce((sum, product) => sum + product.price, 0) / 100;
-      const avgValue = totalValue / (currentProducts.length || 1);
-
-      // Monthly data calculation
-      const monthlyStats = currentProducts.reduce(
-        (acc: Record<string, number>, product) => {
-          const month = new Date(product.createdAt).toLocaleString("default", {
-            month: "short",
-          });
-          acc[month] = (acc[month] || 0) + product.price / 100;
-          return acc;
-        },
-        {}
-      );
-
-      // Shop distribution calculation
-      const shopStats = currentProducts.reduce(
-        (acc: Record<string, number>, product) => {
-          const shop =
-            shops.find((s) => s.id === product.shopId)?.name || "Unknown";
-          acc[shop] = (acc[shop] || 0) + product.price / 100;
-          return acc;
-        },
-        {}
-      );
-
-      const total = Object.values(shopStats).reduce((a, b) => a + b, 0);
-
-      setDashboardData({
-        monthlyData: Object.entries(monthlyStats).map(([month, sales]) => ({
-          month,
-          sales,
-        })),
-        categoryData: Object.entries(shopStats).map(([name, sales]) => ({
-          name,
-          sales: Number(((sales / total) * 100).toFixed(1)),
-        })),
-        metrics: {
-          totalProducts: currentProducts.length,
-          totalValue,
-          avgValue,
-        },
-      });
-    },
-    [shops]
-  );
-
-  // Initialize dashboard data
-  useEffect(() => {
-    calculateDashboardData(products);
-  }, [products, calculateDashboardData]);
-
   const getDisplayProducts = useCallback(() => {
-    return products
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
-      .slice(0, PRODUCTS_LIMIT);
+    // Group products by shop
+    const productsByShop = products.reduce(
+      (acc: Record<string, Product[]>, product) => {
+        if (!acc[product.shopId]) {
+          acc[product.shopId] = [];
+        }
+        acc[product.shopId].push(product);
+        return acc;
+      },
+      {}
+    );
+
+    // Get the most recent 6 products for each shop
+    const limitedProducts = Object.values(productsByShop).flatMap(
+      (shopProducts) =>
+        shopProducts
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+          .slice(0, PRODUCTS_LIMIT)
+    );
+
+    return limitedProducts;
   }, [products]);
 
-  const { metrics, monthlyData, categoryData } = dashboardData;
+  const calculateDashboardData = useCallback(() => {
+    const totalValue =
+      products.reduce((sum, product) => sum + product.price, 0) / 100;
+    const avgValue = totalValue / (products.length || 1);
+
+    const monthlyStats = products.reduce(
+      (acc: Record<string, number>, product) => {
+        const month = new Date(product.createdAt).toLocaleString("default", {
+          month: "short",
+        });
+        acc[month] = (acc[month] || 0) + product.price / 100;
+        return acc;
+      },
+      {}
+    );
+
+    const monthlyData = Object.entries(monthlyStats).map(([month, sales]) => ({
+      month,
+      sales,
+    }));
+
+    const categoryData = Object.entries(
+      products.reduce((acc: Record<string, number>, product) => {
+        acc[product.name] = (acc[product.name] || 0) + product.price / 100;
+        return acc;
+      }, {})
+    ).map(([name, sales]) => ({ name, sales }));
+
+    setDashboardData({
+      monthlyData,
+      categoryData,
+      metrics: {
+        totalProducts: products.length,
+        totalValue,
+        avgValue,
+      },
+    });
+  }, [products]);
+
+  useEffect(() => {
+    calculateDashboardData();
+  }, [calculateDashboardData]);
+
+  if (!shops.length) {
+    return <EmptyState />;
+  }
 
   return (
     <div className="p-4 space-y-4">
@@ -164,6 +175,7 @@ const DashboardGlobal = ({
           onDelete={handleDeleteProduct}
           className="w-full"
           suppliers={suppliers}
+          shops={shops}
         />
         <ProductForm
           shopId={shops[0].id}
@@ -178,85 +190,56 @@ const DashboardGlobal = ({
         <MetricCard
           icon={ShoppingBag}
           title="Products"
-          value={metrics.totalProducts}
-          subtitle="Total Products"
-          color="blue"
+          value={dashboardData.metrics.totalProducts}
+          subtitle="Total products"
+          color="text-blue-500"
         />
         <MetricCard
           icon={CreditCard}
           title="Total Value"
-          value={`¥${metrics.totalValue.toLocaleString()}`}
-          subtitle="Combined Value"
-          color="green"
+          value={`$${dashboardData.metrics.totalValue.toFixed(2)}`}
+          subtitle="Total inventory value"
+          color="text-green-500"
         />
         <MetricCard
           icon={TrendingUp}
           title="Average Value"
-          value={`¥${metrics.avgValue.toLocaleString()}`}
-          subtitle="Per Product"
-          color="orange"
+          value={`$${dashboardData.metrics.avgValue.toFixed(2)}`}
+          subtitle="Average product value"
+          color="text-purple-500"
         />
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <ChartCard title="Monthly Value">
-          <ResponsiveContainer>
-            <AreaChart data={monthlyData}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-lg font-semibold mb-4">Monthly Sales</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={dashboardData.monthlyData}>
               <XAxis dataKey="month" />
               <YAxis />
-              <Tooltip
-                formatter={(value: number) => [
-                  `¥${value.toLocaleString()}`,
-                  "Sales",
-                ]}
-              />
+              <Tooltip />
               <Area
                 type="monotone"
                 dataKey="sales"
-                stroke="#8884d8"
-                fill="#8884d8"
-                fillOpacity={0.3}
+                stroke="#4F46E5"
+                fill="#4F46E5"
               />
             </AreaChart>
           </ResponsiveContainer>
-        </ChartCard>
+        </div>
 
-        <ChartCard title="Shop Distribution">
-          <ResponsiveContainer>
-            <PieChart>
-              <Pie
-                data={categoryData}
-                dataKey="sales"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-              >
-                {categoryData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value: number) => `${value}%`} />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        <ChartCard title="Products by Shop">
-          <ResponsiveContainer>
-            <BarChart data={categoryData}>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-lg font-semibold mb-4">Product Distribution</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={dashboardData.categoryData}>
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip formatter={(value: number) => `${value}%`} />
-              <Bar dataKey="sales" fill="#8884d8" />
+              <Tooltip />
+              <Bar dataKey="sales" fill="#4F46E5" />
             </BarChart>
           </ResponsiveContainer>
-        </ChartCard>
+        </div>
       </div>
     </div>
   );

@@ -56,9 +56,7 @@ export default async function Home() {
             </div>
           ))
         ) : (
-          <div className="text-gray-600 text-center">
-            Aucun magasin disponible.
-          </div>
+          <div className="text-gray-600 text-center">No shops available </div>
         )}
       </div>
       <Shops

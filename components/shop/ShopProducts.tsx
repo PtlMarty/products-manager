@@ -27,6 +27,7 @@ export function ShopProducts({
           products={products}
           onDelete={onDeleteProduct}
           suppliers={suppliers}
+          shops={[shop]}
         />
       ) : (
         <p className="text-gray-500">No products available for this shop.</p>
