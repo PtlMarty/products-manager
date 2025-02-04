@@ -1,16 +1,6 @@
+import { ProductForm } from "@/components/products/ProductForm";
 import { ProductsTable } from "@/components/products/ProductsTable";
-import { Product, Shop, Supplier } from "@prisma/client";
-import { ProductForm } from "../products/ProductForm";
-
-interface ShopProductsProps {
-  shop: Shop;
-  products: Product[];
-  suppliers: Supplier[];
-  onCreateProduct: (
-    product: Partial<Product>
-  ) => Promise<{ success: boolean; data?: Product; error?: Error }>;
-  onDeleteProduct: (id: string) => Promise<{ success: boolean; error?: Error }>;
-}
+import { ShopProductsProps } from "@/types/shop";
 
 export function ShopProducts({
   shop,
