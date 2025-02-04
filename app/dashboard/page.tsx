@@ -5,6 +5,8 @@ import { getSession } from "@/lib/actions/getSession";
 import { getSuppliers } from "@/lib/actions/suppliers/supplierActions";
 // TODO: Add a Dashboard Page with all data from shops and products
 
+const PRODUCTS_LIMIT = 6;
+
 const DashboardPage = async () => {
   const session = await getSession();
   const user = session?.user;
@@ -23,36 +25,29 @@ const DashboardPage = async () => {
     })
   );
 
-  // Flatten the array of arrays into a single array of products
-  const products = allProducts.flat();
+  // Flatten the array and sort by creation date to get the 6 most recent products
+  const products = allProducts
+    .flat()
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
+    .slice(0, PRODUCTS_LIMIT);
+
   // Fetch all suppliers
   const suppliers = await getSuppliers();
 
   return (
-    <div className="flex flex-col gap-10">
-      <div className="flex flex-col text-center">
-        {/* TODO onglet to switch between shops */}
-        <div className="flex flex-row gap-3">
-          {/* TODO: add a button to switch between shops */}
-
-          {shops.map((shop) => (
-            <div className="w-full" key={shop.id}>
-              <h1 className="text-2xl font-bold">{shop.name}</h1>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="flex flex-col justify-center">
-        <div className="m-auto w-full">
-          <DashboardGlobal
-            shops={shops}
-            products={products}
-            suppliers={suppliers}
-          />
-        </div>
-        <div>
-          <div>Charts</div>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-center">
+        Dashboard Overview
+      </h1>
+      <div className="bg-white rounded-lg shadow">
+        <DashboardGlobal
+          shops={shops}
+          products={products}
+          suppliers={suppliers}
+        />
       </div>
     </div>
   );

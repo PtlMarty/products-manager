@@ -1,3 +1,5 @@
+"use server";
+
 // getShop through shopId and link by userId on a join table name shopUsers
 
 import db from "@/lib/db/db";
