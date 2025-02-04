@@ -25,9 +25,11 @@ const DashboardPage = async () => {
     })
   );
 
-  // Flatten the array and sort by creation date to get the 6 most recent products
-  const products = allProducts
-    .flat()
+  // Flatten the array and sort by creation date
+  const flattenedProducts = allProducts.flat();
+  const totalProductsCount = flattenedProducts.length; // Get total number of products
+
+  const products = flattenedProducts
     .sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -47,6 +49,7 @@ const DashboardPage = async () => {
           shops={shops}
           products={products}
           suppliers={suppliers}
+          totalProductsCount={totalProductsCount}
         />
       </div>
     </div>

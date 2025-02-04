@@ -17,7 +17,7 @@ const ShopsPage = async () => {
   const shops = (await getShopsByUserId(session.user.id)) as Shop[];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 h-screen overflow-hidden">
       <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-center">
         Your Shops
       </h1>

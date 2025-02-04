@@ -39,6 +39,7 @@ const ShopPage = async ({ params }: PageProps) => {
         shops={[currentShop]}
         products={products}
         suppliers={suppliers}
+        totalProductsCount={products.length}
       />
     </div>
   );

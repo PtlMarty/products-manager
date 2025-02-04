@@ -23,6 +23,7 @@ interface DashboardGlobalProps {
   shops: Shop[];
   products: Product[];
   suppliers: Supplier[];
+  totalProductsCount: number;
 }
 
 interface DashboardData {
@@ -81,6 +82,7 @@ const DashboardGlobal = ({
   shops,
   products: initialProducts,
   suppliers,
+  totalProductsCount,
 }: DashboardGlobalProps) => {
   const { products, handleDeleteProduct, handleCreateProduct } =
     useProducts(initialProducts);
@@ -168,12 +170,12 @@ const DashboardGlobal = ({
       categoryData,
       shopData,
       metrics: {
-        totalProducts: products.length,
+        totalProducts: totalProductsCount,
         totalValue,
         avgValue,
       },
     });
-  }, [products, shops]);
+  }, [products, shops, totalProductsCount]);
 
   useEffect(() => {
     calculateDashboardData();
