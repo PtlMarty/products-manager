@@ -1,13 +1,9 @@
 "use client";
 
+import { Shop } from "@/types/shop";
 import { ChevronDown, ChevronUp, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-
-interface Shop {
-  id: string;
-  name: string;
-}
 
 interface MobileNavProps {
   shops: Shop[];

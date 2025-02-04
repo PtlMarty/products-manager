@@ -1,12 +1,4 @@
-import { Product, Shop, Supplier } from "@prisma/client";
-
-interface ProductsTableProps {
-  products: Product[];
-  suppliers: Supplier[];
-  shops: Shop[];
-  onDelete: (id: string) => Promise<{ success: boolean; error?: Error }>;
-  className?: string;
-}
+import { ProductsTableProps } from "@/types/product";
 
 export function ProductsTable({
   products,
