@@ -10,6 +10,7 @@ import {
 import { productSchema } from "@/types/product";
 import { Product, Supplier } from "@prisma/client";
 import { Plus } from "lucide-react";
+import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 
 interface ProductFormProps {
@@ -38,10 +39,18 @@ export function ProductForm({
   title = "Add New Product",
   className,
 }: ProductFormProps) {
+  const pathname = usePathname();
   const [formData, setFormData] = useState({ ...initialState, shopId });
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Only show the form in dashboard routes or specific shop routes
+  const allowedRoutes = ["/dashboard/shops"];
+  const isShopRoute = pathname?.startsWith("/dashboard/shops/");
+  const shouldShowForm = allowedRoutes.includes(pathname || "") || isShopRoute;
+
+  if (!shouldShowForm) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
