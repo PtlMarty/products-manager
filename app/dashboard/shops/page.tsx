@@ -20,8 +20,8 @@ const ShopsPage = async () => {
             You haven&apos;t created any shops yet.
           </p>
           <Link
-            href="/dashboard/shops/new"
-            className="text-blue-500 hover:underline"
+            href="/shops/new"
+            className=" hover:underline bg-violet-500 text-white px-4 py-2 rounded-md"
           >
             Create your first shop
           </Link>
@@ -35,12 +35,13 @@ const ShopsPage = async () => {
             >
               <Link
                 href={`/dashboard/shops/${shop.id}`}
-                className="text-blue-500 hover:underline"
+                className="p-2 bg-violet-500 text-white rounded-md"
               >
                 {shop.name}
               </Link>
             </div>
           ))}
+          <div>{/* TODO: Add a dialog to create a new shop */}</div>
         </div>
       )}
     </div>

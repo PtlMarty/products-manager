@@ -1,4 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
@@ -31,19 +37,36 @@ const ShopsPage = async () => {
               <CardContent className="flex-grow flex items-center justify-center p-6">
                 <Link
                   href={`/dashboard/shops/${shop.id}`}
-                  className="inline-flex items-center justify-center px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors"
+                  className="inline-flex items-center justify-center px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
                 >
                   View Dashboard
                 </Link>
               </CardContent>
             </Card>
           ))}
+          {/* //card to create new shop */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Create New Shop</CardTitle>
+              <CardDescription>
+                Create a new shop to get started
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link
+                href="/shops/new"
+                className="inline-flex items-center justify-center px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+              >
+                Create New Shop
+              </Link>
+            </CardContent>
+          </Card>
         </div>
       ) : (
         <div className="text-center py-12">
           <p className="text-gray-600 mb-4">No shops available</p>
           <Link
-            href="/dashboard/shops/new"
+            href="/shops/new"
             className="inline-flex items-center justify-center px-4 py-2 bg-violet-500 text-white rounded-md hover:bg-violet-600 transition-colors"
           >
             Create New Shop

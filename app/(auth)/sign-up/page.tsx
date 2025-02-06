@@ -16,7 +16,7 @@ const Page = async () => {
           "use server";
           const res = await signUp(formData);
           if (res.success) {
-            redirect("/sign-in");
+            redirect("/");
           }
         }}
       >

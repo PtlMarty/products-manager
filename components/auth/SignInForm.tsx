@@ -33,7 +33,7 @@ export function SignInForm() {
         setError("Invalid email or password");
         console.error("Authentication error:", result.error);
       } else {
-        router.push("/dashboard");
+        router.push("/shops");
         router.refresh();
       }
     } catch (error) {
