@@ -41,7 +41,7 @@ export async function createShop(name: string): Promise<ShopActionResult> {
           data: {
             shopId: shop.id,
             userId: session.user.id,
-            role: "owner",
+            role: "ADMIN",
           },
         });
 
@@ -80,7 +80,7 @@ export async function deleteShop(shopId: string): Promise<ShopActionResult> {
         },
       });
 
-      if (!shopUser || shopUser.role !== "owner") {
+      if (!shopUser || shopUser.role !== "ADMIN") {
         throw new Error("You don't have permission to delete this shop");
       }
 
