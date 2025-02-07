@@ -1,3 +1,5 @@
+// TODO: Add a dashboard page with all stats from the user
+
 const DashBoardMainPage = () => {
   return (
     <div>

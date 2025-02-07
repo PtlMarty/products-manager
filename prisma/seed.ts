@@ -1,31 +1,40 @@
 // seed.ts
 
+import db from "@/lib/db/db";
 import { saltAndHashPassword } from "@/lib/saltAndHash";
-import { PrismaClient } from "@prisma/client";
-
-const db = new PrismaClient();
 
 async function main() {
   console.log("Seeding database...");
 
-  // Create users
-  const user1 = await db.user.create({
+  // Create users with different roles
+  const admin = await db.user.create({
     data: {
-      email: "user1@example.com",
-      name: "User One",
-      password: await saltAndHashPassword("password1"), // Use hashed passwords in real implementations
+      email: "admin@example.com",
+      name: "Admin User",
+      password: await saltAndHashPassword("admin123"),
+      role: "ADMIN",
     },
   });
 
-  const user2 = await db.user.create({
+  const seller = await db.user.create({
     data: {
-      email: "user2@example.com",
-      name: "User Two",
-      password: await saltAndHashPassword("password2"),
+      email: "seller@example.com",
+      name: "Seller User",
+      password: await saltAndHashPassword("seller123"),
+      role: "SELLER",
     },
   });
 
-  // Create 10 shops
+  const buyer = await db.user.create({
+    data: {
+      email: "buyer@example.com",
+      name: "Buyer User",
+      password: await saltAndHashPassword("buyer123"),
+      role: "BUYER",
+    },
+  });
+
+  // Create shops
   const shops = await Promise.all(
     [
       "TechHub Electronics",
@@ -33,11 +42,6 @@ async function main() {
       "Fashion Forward",
       "Home Essentials",
       "Sports World",
-      "Garden Center",
-      "Pet Paradise",
-      "Office Supplies Co",
-      "Beauty & Beyond",
-      "Auto Parts Plus",
     ].map((shopName) =>
       db.shop.create({
         data: { name: shopName },
@@ -45,60 +49,170 @@ async function main() {
     )
   );
 
-  // Create 10 suppliers
+  // Create suppliers with complete information
   const suppliers = await Promise.all(
     [
-      "Global Electronics Ltd",
-      "Fresh Produce Co",
-      "Textile Industries",
-      "Home Goods Manufacturing",
-      "Sports Equipment Inc",
-      "Garden Supplies Direct",
-      "Pet Products International",
-      "Office Solutions Corp",
-      "Beauty Products Ltd",
-      "Auto Parts Manufacturing",
-    ].map((supplierName) =>
+      {
+        name: "Global Electronics Ltd",
+        email: "contact@globalelectronics.com",
+        phone: "+1-555-0123",
+        address: "123 Tech Street, Silicon Valley, CA",
+      },
+      {
+        name: "Fresh Produce Co",
+        email: "info@freshproduce.com",
+        phone: "+1-555-0124",
+        address: "456 Farm Road, Agricultural District",
+      },
+      {
+        name: "Textile Industries",
+        email: "contact@textileind.com",
+        phone: "+1-555-0125",
+        address: "789 Fashion Ave, Design District",
+      },
+      {
+        name: "Home Goods Manufacturing",
+        email: "sales@homegoods.com",
+        phone: "+1-555-0126",
+        address: "321 Industrial Park",
+      },
+      {
+        name: "Sports Equipment Inc",
+        email: "info@sportsequip.com",
+        phone: "+1-555-0127",
+        address: "654 Stadium Drive",
+      },
+    ].map((supplierData) =>
       db.supplier.create({
-        data: { name: supplierName },
+        data: supplierData,
       })
     )
   );
 
-  // Link users and shops (ShopUser) - giving each user some shops to manage
-  const shopUserData = shops.map((shop, index) => ({
-    shopId: shop.id,
-    userId: index < 5 ? user1.id : user2.id,
-    role: index % 3 === 0 ? "Owner" : "Manager",
-  }));
+  // Link shops with suppliers
+  for (const shop of shops) {
+    // Each shop gets 2-3 suppliers
+    const shopSuppliers = suppliers.slice(0, Math.floor(Math.random() * 2) + 2);
+    await Promise.all(
+      shopSuppliers.map((supplier) =>
+        db.shopSupplier.create({
+          data: {
+            shopId: shop.id,
+            supplierId: supplier.id,
+          },
+        })
+      )
+    );
+  }
 
-  await db.shopUser.createMany({
-    data: shopUserData,
-  });
+  // Link users and shops with proper roles
+  await Promise.all([
+    // Admin gets access to all shops
+    ...shops.map((shop) =>
+      db.shopUser.create({
+        data: {
+          shopId: shop.id,
+          userId: admin.id,
+          role: "ADMIN",
+        },
+      })
+    ),
+    // Seller gets access to first 3 shops
+    ...shops.slice(0, 3).map((shop) =>
+      db.shopUser.create({
+        data: {
+          shopId: shop.id,
+          userId: seller.id,
+          role: "SELLER",
+        },
+      })
+    ),
+    // Buyer gets access to all shops
+    ...shops.map((shop) =>
+      db.shopUser.create({
+        data: {
+          shopId: shop.id,
+          userId: buyer.id,
+          role: "BUYER",
+        },
+      })
+    ),
+  ]);
 
-  // Create products with realistic names and prices
+  // Create products with stock
   const productsData = [
-    { name: "4K Smart TV", price: 69999, category: "Electronics" },
-    { name: "Organic Bananas (1lb)", price: 299, category: "Groceries" },
-    { name: "Designer Jeans", price: 7999, category: "Fashion" },
-    { name: "Memory Foam Pillow", price: 2999, category: "Home" },
-    { name: "Basketball", price: 2499, category: "Sports" },
-    { name: "Garden Tools Set", price: 4999, category: "Garden" },
-    { name: "Premium Dog Food", price: 3999, category: "Pets" },
-    { name: "Ergonomic Office Chair", price: 19999, category: "Office" },
-    { name: "Luxury Face Cream", price: 5999, category: "Beauty" },
-    { name: "Car Battery", price: 12999, category: "Auto" },
+    { name: "4K Smart TV", price: 69999, stock: 10, category: "Electronics" },
+    { name: "Organic Bananas", price: 299, stock: 100, category: "Groceries" },
+    { name: "Designer Jeans", price: 7999, stock: 50, category: "Fashion" },
+    { name: "Memory Foam Pillow", price: 2999, stock: 30, category: "Home" },
+    { name: "Basketball", price: 2499, stock: 25, category: "Sports" },
   ];
 
-  // Create multiple products for each shop with different suppliers
-  for (const shop of shops) {
-    await db.product.createMany({
-      data: productsData.map((product, index) => ({
-        name: `${product.name} - ${shop.name}`,
-        price: product.price,
+  // Create products for each shop with different suppliers
+  const createdProducts = await Promise.all(
+    shops.flatMap((shop) =>
+      productsData.map((product, index) =>
+        db.product.create({
+          data: {
+            name: `${product.name} - ${shop.name}`,
+            price: product.price,
+            stock: product.stock,
+            shopId: shop.id,
+            supplierId: suppliers[index % suppliers.length].id,
+          },
+        })
+      )
+    )
+  );
+
+  // Create sample orders
+  const orderStatuses = [
+    "PENDING",
+    "CONFIRMED",
+    "SHIPPED",
+    "DELIVERED",
+  ] as const;
+
+  // Create 5 sample orders
+  for (let i = 0; i < 5; i++) {
+    const shop = shops[i % shops.length];
+    const supplier = suppliers[i % suppliers.length];
+    const shopProducts = createdProducts.filter((p) => p.shopId === shop.id);
+
+    // Create order
+    const order = await db.order.create({
+      data: {
         shopId: shop.id,
-        supplierId: suppliers[index].id,
-      })),
+        supplierId: supplier.id,
+        userId: buyer.id,
+        status: orderStatuses[i % orderStatuses.length],
+        totalAmount: 0, // Will be updated after adding items
+      },
+    });
+
+    // Add 2-3 products to each order
+    const orderItems = await Promise.all(
+      shopProducts.slice(0, 2 + (i % 2)).map((product) =>
+        db.orderItem.create({
+          data: {
+            orderId: order.id,
+            productId: product.id,
+            quantity: 1 + Math.floor(Math.random() * 5),
+            price: product.price,
+          },
+        })
+      )
+    );
+
+    // Calculate and update total amount
+    const totalAmount = orderItems.reduce(
+      (sum: number, item: { price: number; quantity: number }) =>
+        sum + item.price * item.quantity,
+      0
+    );
+    await db.order.update({
+      where: { id: order.id },
+      data: { totalAmount },
     });
   }
 
