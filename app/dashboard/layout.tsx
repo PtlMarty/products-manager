@@ -1,19 +1,14 @@
 // TODO: Add a layout for the shop page
 
-import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
+import { ReactNode } from "react";
 
-export default async function ShopLayout({
-  children,
-  userId,
-}: {
-  children: React.ReactNode;
+interface LayoutProps {
+  children: ReactNode;
   userId: string;
-}) {
-  const shops = await getShopsByUserId(userId);
-
-  if (!shops) {
-    throw new Error("Products not found");
-  } else {
-    return <div>{children}</div>;
-  }
 }
+
+const Layout = ({ children }: LayoutProps) => {
+  return <div>{children}</div>;
+};
+
+export default Layout;
