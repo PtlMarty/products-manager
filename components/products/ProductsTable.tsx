@@ -1,5 +1,7 @@
 import { ProductsTableProps } from "@/types/product";
 
+//TODO: Add stock, category, description, image, tags, attributes, variants to the products table
+
 export function ProductsTable({
   products,
   suppliers,

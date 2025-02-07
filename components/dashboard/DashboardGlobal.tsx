@@ -1,5 +1,7 @@
 "use client";
 
+//TODO: Add Orders and Suppliers
+
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { Product, Shop, Supplier } from "@prisma/client";

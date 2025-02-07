@@ -1,5 +1,13 @@
 "use client";
 
+//TODO: Add a stock field to the product form
+//TODO: Add a category field to the product form
+//TODO: Add a description field to the product form
+//TODO: Add a image field to the product form
+//TODO: Add a tags field to the product form
+//TODO: Add a attributes field to the product form
+//TODO: Add a variants field to the product form
+
 import {
   Dialog,
   DialogContent,
