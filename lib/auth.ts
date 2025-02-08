@@ -18,11 +18,11 @@ declare module "next-auth" {
   }
 
   interface User {
-    id: string;
-    email: string;
+    id?: string;
+    email?: string | null;
     name?: string | null;
-    role: Role;
-    emailVerified: null;
+    role?: Role;
+    emailVerified?: null;
   }
 }
 
@@ -105,10 +105,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.email = user.email;
+        token.id = user.id as string;
+        token.email = user.email as string;
         token.name = user.name ?? null;
-        token.role = user.role;
+        token.role = user.role as Role;
       }
       return token;
     },
