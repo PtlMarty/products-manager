@@ -3,6 +3,7 @@ import { getProductsByShopId } from "@/lib/actions/Shop/getProductsByShopId";
 import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
 import { getSession } from "@/lib/actions/getSession";
 import { getSuppliers } from "@/lib/actions/suppliers/supplierActions";
+import { redirect } from "next/navigation";
 // TODO: Add a Dashboard Page with all data from shops and products
 
 const PRODUCTS_LIMIT = 6;
@@ -12,10 +13,13 @@ const DashboardPage = async () => {
   const user = session?.user;
 
   if (!user?.id) {
-    return <div>Please sign in to view the dashboard</div>;
+    redirect("/sign-in");
   }
 
-  const shops = await getShopsByUserId(user.id);
+  const [shops, suppliers] = await Promise.all([
+    getShopsByUserId(user.id),
+    getSuppliers(),
+  ]);
 
   // Fetch all products for all shops
   const allProducts = await Promise.all(
@@ -35,9 +39,6 @@ const DashboardPage = async () => {
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
     .slice(0, PRODUCTS_LIMIT);
-
-  // Fetch all suppliers
-  const suppliers = await getSuppliers();
 
   return (
     <div className="container mx-auto px-4 py-8">
