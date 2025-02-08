@@ -1,3 +1,5 @@
+"use server";
+
 // TODO: add the sign in action
 
 import { executeAction } from "@/lib/actions/executeAction";
@@ -7,31 +9,59 @@ import bcrypt from "bcryptjs";
 
 type SignUpResult = {
   success: boolean;
+  error?: string;
 };
 
-const signUp = async (formData: FormData): Promise<SignUpResult> => {
+export async function signUp(formData: FormData): Promise<SignUpResult> {
   return executeAction({
     actionFn: async () => {
-      const email = formData.get("email") as string | null;
-      const password = formData.get("password") as string | null;
+      const email = formData.get("email");
+      const password = formData.get("password");
 
-      if (!email || !password) {
-        throw new Error("Email and password are required.");
+      if (
+        !email ||
+        !password ||
+        typeof email !== "string" ||
+        typeof password !== "string"
+      ) {
+        return {
+          success: false,
+          error: "Email and password are required.",
+        };
       }
 
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const validatedData = schema.parse({ email, password });
-      await db.user.create({
-        data: {
-          email: validatedData.email.toLocaleLowerCase(),
-          password: hashedPassword,
-        },
-      });
+      try {
+        // Check if user already exists
+        const existingUser = await db.user.findUnique({
+          where: { email: email.toLowerCase() },
+        });
 
-      return { success: true };
+        if (existingUser) {
+          return {
+            success: false,
+            error: "Email already in use.",
+          };
+        }
+
+        const validatedData = schema.parse({ email, password });
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await db.user.create({
+          data: {
+            email: validatedData.email.toLowerCase(),
+            password: hashedPassword,
+          },
+        });
+
+        return { success: true };
+      } catch (error) {
+        console.error("Sign up error:", error);
+        return {
+          success: false,
+          error: "Failed to create account. Please try again.",
+        };
+      }
     },
-    successMessage: "Signed up successfully",
+    successMessage: "Account created successfully",
   });
-};
-
-export { signUp };
+}

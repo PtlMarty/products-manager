@@ -4,22 +4,26 @@ import { signUp } from "@/lib/actions/User/signUp";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-const Page = async () => {
+const SignUpPage = async () => {
+  async function action(formData: FormData) {
+    "use server";
+
+    try {
+      const result = await signUp(formData);
+      if (result.success) {
+        redirect("/sign-in");
+      }
+    } catch (error) {
+      console.error("Sign up error:", error);
+      throw error;
+    }
+  }
+
   return (
     <div className="w-full max-w-sm mx-auto space-y-6">
       <h1 className="text-2xl font-bold text-center mb-6">Create Account</h1>
 
-      {/* Email/Password Sign Up */}
-      <form
-        className="space-y-4"
-        action={async (formData) => {
-          "use server";
-          const res = await signUp(formData);
-          if (res.success) {
-            redirect("/");
-          }
-        }}
-      >
+      <form action={action} className="space-y-4">
         <Input
           name="email"
           placeholder="Email"
@@ -48,4 +52,4 @@ const Page = async () => {
   );
 };
 
-export default Page;
+export default SignUpPage;
