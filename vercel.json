@@ -3,5 +3,5 @@
   "buildCommand": "pnpm run vercel-build",
   "installCommand": "pnpm install",
   "framework": "nextjs",
-  "regions": "hnd1"
+  "regions": ["hnd1"]
 }
