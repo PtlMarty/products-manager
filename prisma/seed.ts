@@ -1,13 +1,34 @@
 // seed.ts
-
-import db from "@/lib/db/db";
 import { saltAndHashPassword } from "@/lib/saltAndHash";
+import { PrismaClient } from "@prisma/client";
+
+const seedClient = new PrismaClient({
+  log: ["error", "warn"],
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+});
 
 async function main() {
   console.log("Seeding database...");
 
+  // Clean up existing data
+  console.log("Cleaning up existing data...");
+  await seedClient.orderItem.deleteMany({});
+  await seedClient.order.deleteMany({});
+  await seedClient.product.deleteMany({});
+  await seedClient.shopSupplier.deleteMany({});
+  await seedClient.shopUser.deleteMany({});
+  await seedClient.supplier.deleteMany({});
+  await seedClient.shop.deleteMany({});
+  await seedClient.session.deleteMany({});
+  await seedClient.user.deleteMany({});
+  console.log("Cleanup completed.");
+
   // Create users with different roles
-  const admin = await db.user.create({
+  const admin = await seedClient.user.create({
     data: {
       email: "admin@example.com",
       name: "Admin User",
@@ -16,7 +37,7 @@ async function main() {
     },
   });
 
-  const seller = await db.user.create({
+  const seller = await seedClient.user.create({
     data: {
       email: "seller@example.com",
       name: "Seller User",
@@ -25,7 +46,7 @@ async function main() {
     },
   });
 
-  const buyer = await db.user.create({
+  const buyer = await seedClient.user.create({
     data: {
       email: "buyer@example.com",
       name: "Buyer User",
@@ -43,7 +64,7 @@ async function main() {
       "Home Essentials",
       "Sports World",
     ].map((shopName) =>
-      db.shop.create({
+      seedClient.shop.create({
         data: { name: shopName },
       })
     )
@@ -83,7 +104,7 @@ async function main() {
         address: "654 Stadium Drive",
       },
     ].map((supplierData) =>
-      db.supplier.create({
+      seedClient.supplier.create({
         data: supplierData,
       })
     )
@@ -95,7 +116,7 @@ async function main() {
     const shopSuppliers = suppliers.slice(0, Math.floor(Math.random() * 2) + 2);
     await Promise.all(
       shopSuppliers.map((supplier) =>
-        db.shopSupplier.create({
+        seedClient.shopSupplier.create({
           data: {
             shopId: shop.id,
             supplierId: supplier.id,
@@ -109,7 +130,7 @@ async function main() {
   await Promise.all([
     // Admin gets access to all shops
     ...shops.map((shop) =>
-      db.shopUser.create({
+      seedClient.shopUser.create({
         data: {
           shopId: shop.id,
           userId: admin.id,
@@ -119,7 +140,7 @@ async function main() {
     ),
     // Seller gets access to first 3 shops
     ...shops.slice(0, 3).map((shop) =>
-      db.shopUser.create({
+      seedClient.shopUser.create({
         data: {
           shopId: shop.id,
           userId: seller.id,
@@ -129,7 +150,7 @@ async function main() {
     ),
     // Buyer gets access to all shops
     ...shops.map((shop) =>
-      db.shopUser.create({
+      seedClient.shopUser.create({
         data: {
           shopId: shop.id,
           userId: buyer.id,
@@ -152,7 +173,7 @@ async function main() {
   const createdProducts = await Promise.all(
     shops.flatMap((shop) =>
       productsData.map((product, index) =>
-        db.product.create({
+        seedClient.product.create({
           data: {
             name: `${product.name} - ${shop.name}`,
             price: product.price,
@@ -180,7 +201,7 @@ async function main() {
     const shopProducts = createdProducts.filter((p) => p.shopId === shop.id);
 
     // Create order
-    const order = await db.order.create({
+    const order = await seedClient.order.create({
       data: {
         shopId: shop.id,
         supplierId: supplier.id,
@@ -193,7 +214,7 @@ async function main() {
     // Add 2-3 products to each order
     const orderItems = await Promise.all(
       shopProducts.slice(0, 2 + (i % 2)).map((product) =>
-        db.orderItem.create({
+        seedClient.orderItem.create({
           data: {
             orderId: order.id,
             productId: product.id,
@@ -210,7 +231,7 @@ async function main() {
         sum + item.price * item.quantity,
       0
     );
-    await db.order.update({
+    await seedClient.order.update({
       where: { id: order.id },
       data: { totalAmount },
     });
@@ -225,5 +246,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await db.$disconnect();
+    await seedClient.$disconnect();
   });

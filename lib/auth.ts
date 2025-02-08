@@ -1,25 +1,53 @@
 import db from "@/lib/db/db";
 import { schema } from "@/lib/zodSchema";
-import { PrismaAdapter } from "@auth/prisma-adapter";
+import { Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
-import type { JWT } from "next-auth/jwt";
-import { decode, encode as defaultEncode } from "next-auth/jwt";
-import Credentials from "next-auth/providers/credentials";
-import { v4 as uuid } from "uuid";
+import { DefaultJWT } from "next-auth/jwt";
+import CredentialsProvider from "next-auth/providers/credentials";
 
-const adapter = PrismaAdapter(db);
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      email: string;
+      name?: string | null;
+      role: Role;
+      emailVerified: null;
+    };
+  }
+
+  interface User {
+    id: string;
+    email: string;
+    name?: string | null;
+    role: Role;
+    emailVerified: null;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT extends DefaultJWT {
+    id: string;
+    email: string;
+    name?: string | null;
+    role: Role;
+  }
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter,
-  debug: process.env.NODE_ENV === "development",
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   pages: {
     signIn: "/sign-in",
     error: "/error",
   },
+  debug: process.env.NODE_ENV === "development",
   providers: [
-    Credentials({
+    CredentialsProvider({
+      name: "Credentials",
       credentials: {
         email: {
           label: "Email",
@@ -28,19 +56,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
         password: { label: "Password", type: "password" },
       },
-      authorize: async (credentials) => {
+      async authorize(credentials) {
         try {
+          if (!credentials?.email || !credentials?.password) {
+            throw new Error("Missing credentials");
+          }
+
           const validatedCredentials = schema.parse(credentials);
 
-          const user = await db.user.findFirst({
-            where: { email: validatedCredentials.email },
+          const user = await db.user.findUnique({
+            where: { email: validatedCredentials.email.toLowerCase() },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              password: true,
+              role: true,
+            },
           });
 
           if (!user || !user.password) {
-            console.error(
-              "Invalid credentials - User not found or no password"
-            );
-            return null;
+            throw new Error("User not found");
           }
 
           const isPasswordMatch = await bcrypt.compare(
@@ -49,14 +85,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           );
 
           if (!isPasswordMatch) {
-            console.error("Invalid credentials - Password does not match");
-            return null;
+            throw new Error("Invalid password");
           }
 
           return {
             id: user.id,
             email: user.email,
             name: user.name,
+            role: user.role,
+            emailVerified: null,
           };
         } catch (error) {
           console.error("Auth error:", error);
@@ -66,86 +103,40 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.name = user.name ?? null;
+        token.role = user.role;
       }
-
-      if (account?.provider === "credentials") {
-        token.credentials = true;
-      }
-
       return token;
     },
     async session({ session, token }) {
-      if (token?.id && typeof token.id === "string") {
-        session.user = {
-          ...session.user,
+      if (!token.id || !token.email) return session;
+
+      return {
+        ...session,
+        user: {
           id: token.id,
-        };
-      }
-      return session;
+          email: token.email,
+          name: token.name ?? null,
+          role: token.role,
+          emailVerified: null,
+        },
+      };
     },
   },
-  jwt: {
-    encode: async function (params) {
-      try {
-        if (params.token?.credentials) {
-          const sessionToken = uuid();
-          if (!params.token.sub) {
-            throw new Error("No user ID found in token");
-          }
-
-          await db.session.create({
-            data: {
-              sessionToken,
-              userId: params.token.sub,
-              expires: new Date(
-                Date.now() + (params.maxAge || 30 * 24 * 60 * 60) * 1000
-              ),
-            },
-          });
-
-          return sessionToken;
-        }
-
-        return await defaultEncode(params);
-      } catch (error) {
-        console.error("JWT encode error:", error);
-        throw error;
-      }
+  secret: process.env.NEXTAUTH_SECRET,
+  logger: {
+    error(error: Error) {
+      console.error("AUTH_ERROR:", error);
     },
-    decode: async function (params) {
-      try {
-        if (!params.token) return null;
-
-        // Check if token is a session token (UUID format)
-        if (
-          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-            params.token
-          )
-        ) {
-          const session = await db.session.findUnique({
-            where: { sessionToken: params.token },
-            include: { user: true },
-          });
-
-          if (!session || !session.user) return null;
-
-          return {
-            sub: session.user.id,
-            email: session.user.email,
-            name: session.user.name,
-            credentials: true,
-          } as JWT;
-        }
-
-        return decode(params);
-      } catch (error) {
-        console.error("JWT decode error:", error);
-        return null;
-      }
+    warn(code: string) {
+      console.warn("AUTH_WARN:", code);
+    },
+    debug(code: string, metadata: unknown) {
+      console.debug("AUTH_DEBUG:", code, metadata);
     },
   },
 });
