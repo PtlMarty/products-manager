@@ -58,7 +58,7 @@ const NavBar = async () => {
                       >
                         <Link
                           href={`/dashboard/shops/${shop.id}`}
-                          className="w-full"
+                          className="w-full hover:bg-gray-700 p-1"
                         >
                           {shop.name}
                         </Link>
@@ -79,10 +79,10 @@ const NavBar = async () => {
                   About
                 </Link>
                 <Link
-                  href="/contact"
+                  href="/contacts"
                   className="text-gray-200 hover:text-white font-medium"
                 >
-                  Contact
+                  Contacts
                 </Link>
               </>
             ) : (
