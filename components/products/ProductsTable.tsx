@@ -33,7 +33,7 @@ export function ProductsTable({
                 Shop: {shops.find((s) => s.id === product.shopId)?.name}
               </div>
               <div>
-                Supplier:{" "}
+                Supplier:
                 {suppliers.find((s) => s.id === product.supplierId)?.name}
               </div>
               <div>
@@ -65,6 +65,9 @@ export function ProductsTable({
                 Created At
               </th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                Stock
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
                 Actions
               </th>
             </tr>
@@ -83,6 +86,7 @@ export function ProductsTable({
                 <td className="px-4 py-3 text-sm">
                   {new Date(product.createdAt).toLocaleDateString()}
                 </td>
+                <td className="px-4 py-3 text-sm">{product.stock}</td>
                 <td className="px-4 py-3 text-sm">
                   <button
                     className="text-red-600 hover:text-red-800 transition-colors"

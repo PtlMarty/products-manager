@@ -31,11 +31,11 @@ export default async function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-full bg-gray-50`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-full bg-gray-50 flex flex-col justify-between`}
       >
         <SessionProvider session={session}>
           <NavBar />
-          <div className="pt-16">{children}</div>
+          <div className="flex-1 pt-16 h-fit">{children}</div>
           <Footer />
         </SessionProvider>
       </body>

@@ -1,5 +1,5 @@
 // seed.ts
-import { saltAndHashPassword } from "@/lib/saltAndHash";
+import { saltAndHashPassword } from "@/utils/saltAndHash";
 import { PrismaClient } from "@prisma/client";
 
 const seedClient = new PrismaClient({

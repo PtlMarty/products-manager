@@ -94,11 +94,11 @@ const MobileNav = ({ shops }: MobileNavProps) => {
                     About
                   </Link>
                   <Link
-                    href="/contact"
+                    href="/contacts"
                     className="text-white font-semibold px-6 py-4 hover:bg-gray-800 active:bg-gray-700 flex items-center space-x-2"
                     onClick={() => setIsOpen(false)}
                   >
-                    Contact
+                    Contacts
                   </Link>
                 </>
               ) : (

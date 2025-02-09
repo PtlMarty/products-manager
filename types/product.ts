@@ -7,6 +7,7 @@ export const productSchema = z.object({
   price: z.number().min(0, "Price must be positive"),
   shopId: z.string().min(1, "Shop ID is required"),
   supplierId: z.string().min(1, "Supplier ID is required"),
+  stock: z.number().min(0, "Stock must be positive"),
 });
 
 export type ProductFormData = z.infer<typeof productSchema>;

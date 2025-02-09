@@ -1,13 +1,8 @@
 // This file is a server component
-import DashBoardMainPage from "@/components/dashboard/DashBoardMainPage";
 import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
 import { getSession } from "@/lib/actions/getSession";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-
-// const PRODUCTS_LIMIT = 6;
-
-// Define the Shop type
 
 export default async function Home() {
   const session = await getSession(); // Await the promise to get the session
@@ -20,22 +15,6 @@ export default async function Home() {
   const user = session.user.id;
   // Fetch shops
   const shops = await getShopsByUserId(user);
-  // const suppliers = await getSuppliers();
-  // //get products by shop id dynamically
-  // const products = await Promise.all(
-  //   shops.map(async (shop) => {
-  //     const shopProducts = await getProductsByShopId(shop.id);
-  //     return shopProducts
-  //       .sort(
-  //         (a, b) =>
-  //           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  //       )
-  //       .slice(0, PRODUCTS_LIMIT);
-  //   })
-  // );
-  // const getDisplayProducts = (products: Product[]) => {
-  //   return products;
-  // };
 
   return (
     <main className="container mx-auto px-4 py-8 h-screen">
@@ -63,9 +42,7 @@ export default async function Home() {
         </div>
 
         {/* Shop Products */}
-        <div className="bg-white rounded-lg shadow">
-          <DashBoardMainPage />
-        </div>
+        <div className="bg-white rounded-lg shadow">HOME PAGE</div>
       </div>
     </main>
   );

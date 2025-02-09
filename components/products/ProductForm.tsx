@@ -37,6 +37,7 @@ const initialState = {
   price: 0,
   shopId: "",
   supplierId: "",
+  stock: 0,
 };
 
 export function ProductForm({
@@ -82,7 +83,13 @@ export function ProductForm({
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    const newValue = name === "price" ? parseFloat(value) || 0 : value;
+    let newValue: string | number = value;
+
+    // Handle numeric fields
+    if (name === "price" || name === "stock") {
+      newValue = parseFloat(value) || 0;
+    }
+
     setFormData((prev) => ({ ...prev, [name]: newValue }));
     setError(null);
   };
@@ -138,12 +145,29 @@ export function ProductForm({
             <input
               id="price"
               name="price"
-              type="number"
               step="0.01"
               min="0"
               value={formData.price}
               onChange={handleChange}
               placeholder="Enter price"
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div className="space-y-2">
+            <label
+              htmlFor="stock"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Stock
+            </label>
+            <input
+              id="stock"
+              name="stock"
+              type="number"
+              value={formData.stock}
+              onChange={handleChange}
+              placeholder="Enter stock"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
