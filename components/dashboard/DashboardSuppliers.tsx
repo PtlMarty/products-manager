@@ -32,7 +32,6 @@ export const DashboardSuppliers = ({
   suppliers,
   shops,
   onDelete,
-  onSubmit,
 }: DashboardSuppliersProps) => {
   const [open, setOpen] = useState(false);
 
