@@ -9,7 +9,9 @@ import { useState } from "react";
 export default function NewShopPage() {
   const router = useRouter();
   const { handleCreateShop } = useShops();
+  // shop name
   const [name, setName] = useState("");
+
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -20,7 +22,7 @@ export default function NewShopPage() {
     try {
       const result = await handleCreateShop(name);
       if (result.success) {
-        router.push("/dashboard/shops");
+        router.push(`/dashboard/shops/${result.data?.id}`);
         router.refresh();
       } else {
         throw new Error(result.error?.message || "Failed to create shop");
@@ -36,12 +38,12 @@ export default function NewShopPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 h-screen overflow-hidden">
+    <div className="container mx-auto px-4 py-8 h-screen overflow-hidden items-center justify-center flex flex-col">
       <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-center">
         Create New Shop
       </h1>
       <form onSubmit={handleSubmit}>
-        <div className="mb-4">
+        <div className="mb-4 flex flex-col gap-3 justify-center items-center">
           <label htmlFor="name" className="block mb-2">
             Shop Name
           </label>
@@ -54,11 +56,13 @@ export default function NewShopPage() {
             required
             minLength={1}
           />
+          <div>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Creating..." : "Create Shop"}
+            </Button>
+            {error && <p className="text-red-500 mt-2">{error}</p>}
+          </div>
         </div>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Creating..." : "Create Shop"}
-        </Button>
-        {error && <p className="text-red-500 mt-2">{error}</p>}
       </form>
     </div>
   );
