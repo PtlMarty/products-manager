@@ -1,5 +1,5 @@
 import { CreditCard, ShoppingBag, TrendingUp } from "lucide-react";
-import { MetricCard } from "./MetricCard";
+import { MetricCard } from "../MetricCard";
 
 interface DashboardMetricsProps {
   metrics: {

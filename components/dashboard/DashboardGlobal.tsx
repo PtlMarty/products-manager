@@ -3,16 +3,16 @@
 //TODO: Add Orders and Suppliers
 
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { useSuppliers } from "@/lib/hooks/UseSuppliers";
 import { Product, Shop, Supplier } from "@prisma/client";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { DashboardCharts } from "./DashboardCharts";
-import { DashboardMetrics } from "./DashboardMetrics";
+import { DashboardCharts } from "./charts/DashboardCharts";
+import { DashboardMetrics } from "./charts/DashboardMetrics";
 import { DashboardProducts } from "./DashboardProducts";
 import { DashboardSuppliers } from "./DashboardSuppliers";
-
 interface DashboardGlobalProps {
   shops: Shop[];
   products: Product[];
@@ -195,24 +195,46 @@ const DashboardGlobal = ({
 
   return (
     <div className="p-2 sm:p-4 space-y-4 max-w-[1400px] mx-auto">
-      <DashboardProducts
-        products={getDisplayProducts()}
-        shops={shops}
-        suppliers={suppliers}
-        onDelete={handleDeleteProduct}
-        onSubmit={handleCreateProduct}
-      />
-      <DashboardSuppliers
-        suppliers={getDisplaySuppliers()}
-        shops={shops}
-        onDelete={removeSupplier}
-        onSubmit={addSupplier}
-      />
-      <DashboardMetrics metrics={dashboardData.metrics} />
-      <DashboardCharts
-        monthlyData={dashboardData.monthlyData}
-        supplierData={dashboardData.supplierData}
-      />
+      {/* add onglet for supplier and product */}
+      <Tabs defaultValue="products">
+        <TabsList>
+          <TabsTrigger value="products">Products</TabsTrigger>
+          <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="products">
+          <DashboardProducts
+            products={getDisplayProducts()}
+            shops={shops}
+            suppliers={suppliers}
+            onDelete={handleDeleteProduct}
+            onSubmit={handleCreateProduct}
+          />
+        </TabsContent>
+        <TabsContent value="suppliers">
+          <DashboardSuppliers
+            suppliers={getDisplaySuppliers()}
+            shops={shops}
+            onDelete={removeSupplier}
+            onSubmit={addSupplier}
+          />
+        </TabsContent>
+      </Tabs>
+      <Tabs defaultValue="charts">
+        <TabsList>
+          <TabsTrigger value="charts">Charts</TabsTrigger>
+          <TabsTrigger value="metrics">Metrics</TabsTrigger>
+        </TabsList>
+        <TabsContent value="charts">
+          <DashboardCharts
+            monthlyData={dashboardData.monthlyData}
+            supplierData={dashboardData.supplierData}
+          />
+        </TabsContent>
+        <TabsContent value="metrics">
+          <DashboardMetrics metrics={dashboardData.metrics} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
