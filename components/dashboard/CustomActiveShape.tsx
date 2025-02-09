@@ -17,7 +17,7 @@ interface CustomActiveShapeProps {
 // CustomActiveShape component for the pie chart
 export const CustomActiveShape = (
   props: CustomActiveShapeProps
-): JSX.Element => {
+): React.JSX.Element => {
   const RADIAN = Math.PI / 180;
   const {
     cx = 0,
