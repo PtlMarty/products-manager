@@ -4,12 +4,14 @@
 
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/lib/hooks/useProducts";
+import { useSuppliers } from "@/lib/hooks/UseSuppliers";
 import { Product, Shop, Supplier } from "@prisma/client";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { DashboardCharts } from "./DashboardCharts";
 import { DashboardMetrics } from "./DashboardMetrics";
 import { DashboardProducts } from "./DashboardProducts";
+import { DashboardSuppliers } from "./DashboardSuppliers";
 
 interface DashboardGlobalProps {
   shops: Shop[];
@@ -26,11 +28,14 @@ interface DashboardData {
     totalProducts: number;
     totalValue: number;
     avgValue: number;
+    totalSuppliers: number;
+    activeSuppliers: number;
   };
   supplierData: { name: string; value: number }[];
 }
 
 const PRODUCTS_LIMIT = 6;
+const SUPPLIERS_LIMIT = 6;
 
 const EmptyState = () => (
   <div className="flex flex-col items-center justify-center min-h-[60vh] p-4 space-y-4 text-center">
@@ -49,11 +54,13 @@ const EmptyState = () => (
 const DashboardGlobal = ({
   shops,
   products: initialProducts,
-  suppliers,
+  suppliers: initialSuppliers,
   totalProductsCount,
 }: DashboardGlobalProps) => {
   const { products, handleDeleteProduct, handleCreateProduct } =
     useProducts(initialProducts);
+  const { suppliers, removeSupplier, addSupplier } =
+    useSuppliers(initialSuppliers);
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     monthlyData: [],
     categoryData: [],
@@ -62,6 +69,8 @@ const DashboardGlobal = ({
       totalProducts: 0,
       totalValue: 0,
       avgValue: 0,
+      totalSuppliers: 0,
+      activeSuppliers: 0,
     },
     supplierData: [],
   });
@@ -92,6 +101,15 @@ const DashboardGlobal = ({
 
     return limitedProducts;
   }, [products]);
+
+  const getDisplaySuppliers = useCallback(() => {
+    return suppliers
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+      .slice(0, SUPPLIERS_LIMIT);
+  }, [suppliers]);
 
   const calculateDashboardData = useCallback(() => {
     const totalValue =
@@ -147,6 +165,11 @@ const DashboardGlobal = ({
       };
     });
 
+    // Calculate active suppliers (suppliers with at least one product)
+    const activeSuppliers = suppliers.filter((supplier) =>
+      products.some((product) => product.supplierId === supplier.id)
+    ).length;
+
     setDashboardData({
       monthlyData,
       categoryData,
@@ -155,6 +178,8 @@ const DashboardGlobal = ({
         totalProducts: totalProductsCount,
         totalValue,
         avgValue,
+        totalSuppliers: suppliers.length,
+        activeSuppliers,
       },
       supplierData,
     });
@@ -176,6 +201,12 @@ const DashboardGlobal = ({
         suppliers={suppliers}
         onDelete={handleDeleteProduct}
         onSubmit={handleCreateProduct}
+      />
+      <DashboardSuppliers
+        suppliers={getDisplaySuppliers()}
+        shops={shops}
+        onDelete={removeSupplier}
+        onSubmit={addSupplier}
       />
       <DashboardMetrics metrics={dashboardData.metrics} />
       <DashboardCharts
