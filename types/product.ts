@@ -19,21 +19,12 @@ export interface ProductActionResult {
 }
 
 export interface ProductsTableProps {
-  data: {
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    stock: number;
-    supplierId: string;
-    shopId: string;
-    createdAt: Date;
-    updatedAt: Date;
-  }[];
-  onEdit?: (product: ProductsTableProps["data"][0]) => void;
-  onDelete?: (product: ProductsTableProps["data"][0]) => void;
+  data: Product[];
+  onEdit?: (product: Product) => void;
+  onDelete?: (product: Product) => void;
   isLoading?: boolean;
   className?: string;
+  suppliers: Supplier[];
 }
 
 export interface ProductFormProps {

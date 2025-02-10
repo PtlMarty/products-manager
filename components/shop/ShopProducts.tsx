@@ -16,6 +16,7 @@ export function ShopProducts({
         <ProductsTable
           data={products.map((product) => ({ ...product, description: "" }))}
           onDelete={(product) => onDeleteProduct(product.id)}
+          suppliers={suppliers}
         />
       ) : (
         <p className="text-gray-500">No products available for this shop.</p>

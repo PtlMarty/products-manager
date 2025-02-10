@@ -39,6 +39,7 @@ export const DashboardProducts = ({
             onDelete={(product) => onDelete(product.id)}
             onEdit={(product) => onUpdate(product.id, product)}
             className="w-full"
+            suppliers={suppliers}
           />
         </div>
       </div>

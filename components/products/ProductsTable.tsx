@@ -1,4 +1,6 @@
 import { ProductsTableProps } from "@/types/product";
+import { Trash2 } from "lucide-react";
+import EditProduct from "./EditProduct";
 
 //TODO: Add stock, category, description, image, tags, attributes, variants to the products table
 
@@ -8,6 +10,7 @@ export function ProductsTable({
   onDelete,
   isLoading,
   className,
+  suppliers,
 }: ProductsTableProps) {
   if (isLoading) {
     return <div className="p-4 text-center">Loading products...</div>;
@@ -88,17 +91,19 @@ export function ProductsTable({
                 </td>
                 <td className="px-4 py-3 text-sm">{product.stock}</td>
                 <td className="px-4 py-3 text-sm space-x-2">
-                  <button
-                    className="text-blue-600 hover:text-blue-800 transition-colors"
-                    onClick={() => onEdit?.(product)}
-                  >
-                    Edit
-                  </button>
+                  <EditProduct
+                    product={product}
+                    suppliers={suppliers}
+                    onUpdate={async (updatedProduct) => {
+                      onEdit?.(updatedProduct);
+                      return { success: true, data: updatedProduct };
+                    }}
+                  />
                   <button
                     className="text-red-600 hover:text-red-800 transition-colors"
                     onClick={() => onDelete?.(product)}
                   >
-                    Delete
+                    <Trash2 size={16} />
                   </button>
                 </td>
               </tr>
