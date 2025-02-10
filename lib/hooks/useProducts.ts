@@ -1,6 +1,7 @@
 import {
   createProduct,
   deleteProduct,
+  updateProduct,
 } from "@/lib/actions/products/productsActions";
 import { Product } from "@prisma/client";
 import { useState } from "react";
@@ -82,11 +83,34 @@ export const useProducts = (initialProducts: Product[] = []) => {
     }
   };
 
+  const handleUpdateProduct = async (
+    productId: string,
+    productData: Partial<Product>
+  ): Promise<{ success: boolean; data?: Product; error?: Error }> => {
+    try {
+      const result = await updateProduct(productId, productData);
+      if (result.success && result.data) {
+        // Update local state with the updated product
+        setProducts(
+          products.map((p: Product) =>
+            p.id === productId && result.data ? result.data : p
+          )
+        );
+        return { success: true, data: result.data };
+      }
+      return { success: false };
+    } catch (error) {
+      console.error("Failed to update product:", error);
+      return { success: false };
+    }
+  };
+
   // Return products state and handler functions
   return {
     products,
     setProducts,
     handleDeleteProduct,
     handleCreateProduct,
+    handleUpdateProduct,
   };
 };

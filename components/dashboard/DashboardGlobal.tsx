@@ -2,8 +2,13 @@
 
 //TODO: Add Orders and Suppliers
 
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/atoms/button";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/molecules/tabs";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { useSuppliers } from "@/lib/hooks/UseSuppliers";
 import { Product, Shop, Supplier } from "@prisma/client";
@@ -57,8 +62,12 @@ const DashboardGlobal = ({
   suppliers: initialSuppliers,
   totalProductsCount,
 }: DashboardGlobalProps) => {
-  const { products, handleDeleteProduct, handleCreateProduct } =
-    useProducts(initialProducts);
+  const {
+    products,
+    handleDeleteProduct,
+    handleCreateProduct,
+    handleUpdateProduct,
+  } = useProducts(initialProducts);
   const { suppliers, removeSupplier, addSupplier } =
     useSuppliers(initialSuppliers);
   const [dashboardData, setDashboardData] = useState<DashboardData>({
@@ -195,7 +204,7 @@ const DashboardGlobal = ({
 
   return (
     <div className="p-2 sm:p-4 space-y-4 max-w-[1400px] mx-auto">
-      {/* add onglet for supplier and product */}
+      {/*  onglet for supplier and product */}
       <Tabs defaultValue="products">
         <TabsList>
           <TabsTrigger value="products">Products</TabsTrigger>
@@ -209,6 +218,7 @@ const DashboardGlobal = ({
             suppliers={suppliers}
             onDelete={handleDeleteProduct}
             onSubmit={handleCreateProduct}
+            onUpdate={handleUpdateProduct}
           />
         </TabsContent>
         <TabsContent value="suppliers">

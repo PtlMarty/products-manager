@@ -14,10 +14,8 @@ export function ShopProducts({
       <h2 className="text-2xl font-semibold mb-4">{shop.name}</h2>
       {products.length > 0 ? (
         <ProductsTable
-          products={products}
-          onDelete={onDeleteProduct}
-          suppliers={suppliers}
-          shops={[shop]}
+          data={products.map((product) => ({ ...product, description: "" }))}
+          onDelete={(product) => onDeleteProduct(product.id)}
         />
       ) : (
         <p className="text-gray-500">No products available for this shop.</p>

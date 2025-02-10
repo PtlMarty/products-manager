@@ -12,6 +12,14 @@ interface DashboardProductsProps {
     data?: Product;
     error?: Error;
   }>;
+  onUpdate: (
+    productId: string,
+    product: Partial<Product>
+  ) => Promise<{
+    success: boolean;
+    data?: Product;
+    error?: Error;
+  }>;
 }
 
 export const DashboardProducts = ({
@@ -20,17 +28,17 @@ export const DashboardProducts = ({
   suppliers,
   onDelete,
   onSubmit,
+  onUpdate,
 }: DashboardProductsProps) => {
   return (
     <div className="flex flex-col gap-4">
       <div className="overflow-x-auto -mx-2 sm:mx-0">
         <div className="min-w-full inline-block align-middle">
           <ProductsTable
-            products={products}
-            onDelete={onDelete}
+            data={products.map((product) => ({ ...product, description: "" }))}
+            onDelete={(product) => onDelete(product.id)}
+            onEdit={(product) => onUpdate(product.id, product)}
             className="w-full"
-            suppliers={suppliers}
-            shops={shops}
           />
         </div>
       </div>

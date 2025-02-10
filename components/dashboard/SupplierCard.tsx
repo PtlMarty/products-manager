@@ -1,14 +1,14 @@
 "use client";
 
 import { AlertModal } from "@/components/modals/alert-modal";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/atoms/button";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/molecules/card";
 import { Supplier } from "@/lib/hooks/UseSuppliers";
 import { Edit, Mail, Phone, Trash } from "lucide-react";
 import { useState } from "react";

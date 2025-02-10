@@ -1,13 +1,13 @@
-import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
-import { auth } from "@/lib/auth";
-import Image from "next/image";
-import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from "@/components/ui/molecules/dropdown-menu";
+import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
+import { auth } from "@/lib/auth";
+import Image from "next/image";
+import Link from "next/link";
 import MobileNav from "./MobileNav";
 
 const NavBar = async () => {

@@ -1,7 +1,7 @@
 //create new shop page
 "use client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/atoms/button";
+import { Input } from "@/components/ui/atoms/input";
 import { useShops } from "@/lib/hooks/useShops";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

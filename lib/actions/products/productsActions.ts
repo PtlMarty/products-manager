@@ -42,3 +42,25 @@ export async function deleteProduct(
     },
   });
 }
+
+export async function updateProduct(
+  productId: string,
+  product: Partial<Product>
+): Promise<ProductActionResult> {
+  return executeAction({
+    actionFn: async () => {
+      const validatedData = productSchema.parse(product);
+
+      const updatedProduct = await db.product.update({
+        where: { id: productId },
+        data: validatedData,
+      });
+
+      return {
+        success: true,
+        message: "Product updated successfully",
+        data: updatedProduct,
+      };
+    },
+  });
+}

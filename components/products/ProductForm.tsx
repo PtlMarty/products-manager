@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/components/ui/organisms/dialog";
 import { productSchema } from "@/types/product";
 import { Product, Supplier } from "@prisma/client";
 import { Plus } from "lucide-react";

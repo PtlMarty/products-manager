@@ -1,4 +1,4 @@
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/atoms/button";
 import { VariantProps } from "class-variance-authority";
 import * as React from "react";
 
