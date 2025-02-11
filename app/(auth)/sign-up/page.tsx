@@ -20,33 +20,54 @@ const SignUpPage = async () => {
   }
 
   return (
-    <div className="w-full max-w-sm mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-center mb-6">Create Account</h1>
+    <div className="w-full h-screen flex items-center justify-center">
+      <div className="w-full max-w-sm mx-auto space-y-6">
+        <h1 className="text-2xl font-bold text-center mb-6">Create Account</h1>
 
-      <form action={action} className="space-y-4">
-        <Input
-          name="email"
-          placeholder="Email"
-          type="email"
-          required
-          autoComplete="email"
-        />
-        <Input
-          name="password"
-          placeholder="Password"
-          type="password"
-          required
-          autoComplete="new-password"
-        />
-        <Button className="w-full" type="submit">
-          Sign Up
-        </Button>
-      </form>
+        <form action={action} className="space-y-4">
+          <Input
+            name="email"
+            placeholder="Email"
+            type="email"
+            required
+            autoComplete="email"
+          />
+          <Input
+            name="password"
+            placeholder="Password"
+            type="password"
+            required
+            autoComplete="new-password"
+          />
+          <Button className="w-full" type="submit">
+            Sign Up
+          </Button>
+        </form>
 
-      <div className="text-center">
-        <Button asChild variant="link">
-          <Link href="/sign-in">Already have an account? Sign in</Link>
-        </Button>
+        <div className="text-center">
+          <Button asChild variant="link">
+            <Link href="/sign-in">Already have an account? Sign in</Link>
+          </Button>
+        </div>
+        <div className="text-sm text-gray-500 flex flex-col text-center">
+          To try this app, Sign-in with the following credentials:
+          <p>
+            <code className="text-gray-900">email: admin@test.com</code>
+          </p>
+          <p>
+            <code className="text-gray-900">password: admin123</code>
+          </p>
+          <br />
+          <br />
+          <p>
+            Please be respectful and don&apos;t abuse the app.
+            <br />
+            This app is for personal use only.
+            <br />
+            If you have any questions, please contact the developer
+            <a href="mailto:ptl_martin@yahoo.co.jp">Here</a>.
+          </p>
+        </div>
       </div>
     </div>
   );

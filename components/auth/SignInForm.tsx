@@ -46,6 +46,7 @@ export function SignInForm() {
 
   return (
     <div className="w-full max-w-sm mx-auto space-y-6">
+      <h3 className="text-2xl font-bold text-center mb-6">Sign In</h3>
       <form className="space-y-4" onSubmit={handleSubmit}>
         {error && (
           <div className="p-3 text-sm text-red-500 bg-red-50 border border-red-200 rounded-md">
