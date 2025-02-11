@@ -9,15 +9,19 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/molecules/tabs";
+import { useOrders } from "@/lib/hooks/UseOrders";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { useSuppliers } from "@/lib/hooks/UseSuppliers";
 import { Product, Shop, Supplier } from "@prisma/client";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import OrdersTable from "../orders/OrdersTable";
 import { DashboardCharts } from "./charts/DashboardCharts";
 import { DashboardMetrics } from "./charts/DashboardMetrics";
 import { DashboardProducts } from "./DashboardProducts";
 import { DashboardSuppliers } from "./DashboardSuppliers";
+
 interface DashboardGlobalProps {
   shops: Shop[];
   products: Product[];
@@ -62,6 +66,7 @@ const DashboardGlobal = ({
   suppliers: initialSuppliers,
   totalProductsCount,
 }: DashboardGlobalProps) => {
+  const { data: session } = useSession();
   const {
     products,
     handleDeleteProduct,
@@ -70,6 +75,7 @@ const DashboardGlobal = ({
   } = useProducts(initialProducts);
   const { suppliers, removeSupplier, addSupplier } =
     useSuppliers(initialSuppliers);
+  const { orders } = useOrders(shops[0]?.id);
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     monthlyData: [],
     categoryData: [],
@@ -209,6 +215,7 @@ const DashboardGlobal = ({
         <TabsList>
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
+          <TabsTrigger value="orders">Orders</TabsTrigger>
         </TabsList>
 
         <TabsContent value="products">
@@ -227,6 +234,13 @@ const DashboardGlobal = ({
             shops={shops}
             onDelete={removeSupplier}
             onSubmit={addSupplier}
+          />
+        </TabsContent>
+        <TabsContent value="orders">
+          <OrdersTable
+            shopId={shops[0].id}
+            userId={session?.user?.id || ""}
+            orders={orders || []}
           />
         </TabsContent>
       </Tabs>

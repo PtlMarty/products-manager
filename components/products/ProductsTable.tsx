@@ -62,14 +62,19 @@ export function ProductsTable({
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
                 Product Name ↓
               </th>
+
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
                 Price (¥)
               </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
-                Created At
-              </th>
+
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
                 Stock
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                Supplier
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                Created At
               </th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
                 Actions
@@ -85,11 +90,19 @@ export function ProductsTable({
                 >
                   {product.name}
                 </td>
+
                 <td className="px-4 py-3 text-sm">¥{product.price}</td>
+                <td className="px-4 py-3 text-sm">{product.stock}</td>
+                <td className="px-4 py-3 text-sm">
+                  {
+                    suppliers.find(
+                      (supplier) => supplier.id === product.supplierId
+                    )?.name
+                  }
+                </td>
                 <td className="px-4 py-3 text-sm">
                   {new Date(product.createdAt).toLocaleDateString()}
                 </td>
-                <td className="px-4 py-3 text-sm">{product.stock}</td>
                 <td className="px-4 py-3 text-sm space-x-2">
                   <EditProduct
                     product={product}
