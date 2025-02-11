@@ -1,35 +1,38 @@
 "use client";
 
+import { Input } from "@/components/ui/atoms/input";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/organisms/dialog";
+  BaseFormDialog,
+  FormField,
+  selectStyles,
+} from "@/components/ui/organisms/base-form-dialog";
 import { Order, OrderStatus, Product, Shop, Supplier } from "@prisma/client";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Search, Trash2 } from "lucide-react";
+import { Session } from "next-auth";
+import Link from "next/link";
 import React, { useState } from "react";
 
-interface OrderItem {
-  productId: string;
-  quantity: number;
-  price: number;
-}
-
+// Interface for order form data structure
 export interface OrderFormData {
   totalAmount: number;
   status: OrderStatus;
   shopId: string;
-  supplierId: string;
-  orderItems: OrderItem[];
+  orderItems: {
+    create: Array<{
+      productId: string;
+      quantity: number;
+      price: number;
+    }>;
+  };
 }
 
+// Props interface for the OrderForm component
 interface OrderFormProps {
   shopId: string;
   products: Product[];
-  suppliers: Supplier[];
+  suppliers?: Supplier[];
   shops?: Shop[];
+  session: Session | null;
   onSubmit: (
     order: OrderFormData
   ) => Promise<{ success: boolean; data?: Order; error?: Error }>;
@@ -40,19 +43,151 @@ interface OrderFormProps {
   standalone?: boolean;
 }
 
+// Initial state for the order form
 const initialState: OrderFormData = {
   totalAmount: 0,
   status: OrderStatus.PENDING,
   shopId: "",
-  supplierId: "",
-  orderItems: [],
+  orderItems: {
+    create: [],
+  },
 };
 
+/**
+ * Product search combobox component
+ * Provides search functionality for products
+ */
+function ProductCombobox({
+  products,
+  value = "",
+  onChange,
+}: {
+  products: Product[];
+  value?: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  // Filter products based on search input
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="relative">
+      <div className="border rounded-md">
+        <div className="flex items-center border-b px-3">
+          <Search className="h-4 w-4 text-gray-400" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="border-0 focus:ring-0 focus:outline-none"
+            placeholder="Search products..."
+            onFocus={() => setOpen(true)}
+          />
+        </div>
+        {open && (
+          <div className="absolute w-full bg-white border rounded-b-md shadow-lg max-h-64 overflow-y-auto z-50">
+            <div role="listbox">
+              {filteredProducts.map((product) => (
+                <div
+                  key={product.id}
+                  role="option"
+                  aria-selected={value === product.id}
+                  onClick={() => {
+                    onChange(product.id);
+                    setOpen(false);
+                  }}
+                  className="flex justify-between items-center px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                >
+                  <div>
+                    <div className="font-medium">{product.name}</div>
+                    <div className="text-sm text-gray-500">
+                      Stock: {product.stock}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-medium">¥{product.price}</div>
+                  </div>
+                </div>
+              ))}
+              {filteredProducts.length === 0 && (
+                <div className="px-3 py-2 text-sm text-gray-500">
+                  No products found
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Product card component for displaying selected products
+ * Shows product details and quantity controls
+ */
+function ProductCard({
+  product,
+  quantity,
+  onQuantityChange,
+  onRemove,
+}: {
+  product: Product;
+  quantity: number;
+  onQuantityChange: (value: number) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="p-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex justify-between items-start">
+        <div>
+          <h4 className="font-medium">{product.name}</h4>
+          <div className="text-sm text-gray-500 mt-1">
+            <span>Stock: {product.stock}</span>
+            <span className="mx-2">•</span>
+            <span>Price: ¥{product.price}</span>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="text-gray-400 hover:text-red-500"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+      <div className="mt-3">
+        <label className="text-sm font-medium text-gray-700">Quantity</label>
+        <input
+          type="number"
+          min="1"
+          max={product.stock}
+          value={quantity}
+          onChange={(e) => onQuantityChange(parseInt(e.target.value))}
+          className="mt-1 w-24 px-2 py-1 border rounded"
+        />
+        {quantity > product.stock && (
+          <p className="text-sm text-red-500 mt-1">
+            Exceeds available stock ({product.stock})
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Main OrderForm component
+ * Handles creation and editing of orders
+ */
 export function OrderForm({
   shopId,
   products = [],
-  suppliers = [],
   shops,
+  session,
   onSubmit,
   trigger,
   title = "Create New Order",
@@ -60,51 +195,125 @@ export function OrderForm({
   initialData,
   standalone = true,
 }: OrderFormProps) {
+  console.log("[OrderForm] Received props:", {
+    shopId,
+    productsLength: products?.length || 0,
+    shopsLength: shops?.length || 0,
+    hasSession: !!session,
+    hasInitialData: !!initialData,
+  });
+
+  // Form state management
   const [formData, setFormData] = useState<OrderFormData>(
     initialData
       ? {
           totalAmount: initialData.totalAmount,
           status: initialData.status,
           shopId: initialData.shopId,
-          supplierId: initialData.supplierId,
-          orderItems: [], // Initialize empty, you'll need to fetch order items separately if needed
+          orderItems: {
+            create: [],
+          },
         }
       : { ...initialState, shopId }
   );
-  const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const calculateTotal = (items: OrderItem[]) => {
+  // Validation checks
+  if (!Array.isArray(products)) {
+    console.error("[OrderForm] Products is not an array:", products);
+    return (
+      <div className="p-4 text-center text-gray-500">
+        Error: Invalid products data. Please refresh the page.
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    console.log("[OrderForm] No products available");
+    return (
+      <div className="p-4 text-center text-gray-500">
+        Cannot create order: No products available.
+      </div>
+    );
+  }
+
+  // Helper function to calculate total amount
+  const calculateTotal = (items: { quantity: number; price: number }[]) => {
     return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Form submission handler
+  const handleSubmit = async () => {
     setError(null);
     setIsLoading(true);
 
     try {
-      if (formData.orderItems.length === 0) {
-        throw new Error("Please add at least one product to the order");
+      console.log("[handleSubmit] Starting submission with:", {
+        formData,
+        products: products.map((p) => ({ id: p.id, name: p.name })),
+      });
+
+      // Validation checks
+      if (!formData) {
+        throw new Error("Form data is missing");
       }
 
-      const result = await onSubmit(formData);
+      if (!session?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+
+      if (!formData.orderItems?.create?.length) {
+        throw new Error("Please add at least one item to the order");
+      }
+
+      // Validate and process order items
+      const validatedOrderItems = formData.orderItems.create.map((item) => {
+        const product = products.find((p) => p.id === item.productId);
+        if (!product) {
+          throw new Error(`Product not found: ${item.productId}`);
+        }
+        console.log("[handleSubmit] Validated product:", product);
+        return {
+          productId: item.productId,
+          quantity: item.quantity,
+          price: product.price,
+        };
+      });
+
+      // Calculate total amount
+      const totalAmount = calculateTotal(validatedOrderItems);
+
+      // Prepare order data
+      const orderData: OrderFormData = {
+        totalAmount,
+        status: formData.status,
+        shopId: formData.shopId || shopId,
+        orderItems: {
+          create: validatedOrderItems,
+        },
+      };
+
+      console.log("[handleSubmit] Submitting order data:", orderData);
+
+      // Submit order and handle response
+      const result = await onSubmit(orderData);
+      console.log("[handleSubmit] Submit result:", result);
 
       if (result.success) {
         setFormData({ ...initialState, shopId });
-        setOpen(false);
       } else {
-        setError(result.error?.message || "Failed to create order");
+        throw new Error(result.error?.message || "Failed to create order");
       }
     } catch (error) {
-      console.error("Form error:", error);
+      console.error("[handleSubmit] Error:", error);
       setError(error instanceof Error ? error.message : "Invalid form data");
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Form field change handler
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -113,23 +322,26 @@ export function OrderForm({
     setError(null);
   };
 
+  // Order item management functions
   const addOrderItem = () => {
     setFormData((prev) => ({
       ...prev,
-      orderItems: [
-        ...prev.orderItems,
-        { productId: "", quantity: 1, price: 0 },
-      ],
+      orderItems: {
+        create: [
+          ...prev.orderItems.create,
+          { productId: "", quantity: 1, price: 0 },
+        ],
+      },
     }));
   };
 
   const updateOrderItem = (
     index: number,
-    field: keyof OrderItem,
+    field: "productId" | "quantity" | "price",
     value: string | number
   ) => {
     setFormData((prev) => {
-      const newItems = [...prev.orderItems];
+      const newItems = [...prev.orderItems.create];
       newItems[index] = { ...newItems[index], [field]: value };
 
       if (field === "productId") {
@@ -140,57 +352,47 @@ export function OrderForm({
       }
 
       const totalAmount = calculateTotal(newItems);
-      return { ...prev, orderItems: newItems, totalAmount };
+      return {
+        ...prev,
+        orderItems: { create: newItems },
+        totalAmount,
+      };
     });
   };
 
   const removeOrderItem = (index: number) => {
     setFormData((prev) => ({
       ...prev,
-      orderItems: prev.orderItems.filter((_, i) => i !== index),
+      orderItems: {
+        create: prev.orderItems.create.filter((_, i) => i !== index),
+      },
     }));
   };
 
-  // Add early return if required props are missing
-  if (!products.length || !suppliers.length) {
-    return (
-      <div className="p-4 text-center text-gray-500">
-        Cannot create order: {!products.length ? "No products available. " : ""}
-        {!suppliers.length ? "No suppliers available." : ""}
-      </div>
-    );
-  }
-
-  const formContent = (
-    <>
-      {title && (
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-gray-900">
-            {title}
-          </DialogTitle>
-        </DialogHeader>
-      )}
-      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-        {error && (
-          <div className="text-red-500 text-sm bg-red-50 p-3 rounded-md">
-            {error}
-          </div>
-        )}
-        {shops && shops.length > 0 && (
-          <div className="space-y-2">
-            <label
-              htmlFor="shopId"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Shop
-            </label>
+  return (
+    <BaseFormDialog
+      title={title}
+      trigger={trigger}
+      className={className}
+      standalone={standalone}
+      isLoading={isLoading}
+      error={error}
+      onSubmit={handleSubmit}
+      submitLabel={{
+        default: initialData ? "Update Order" : "Create Order",
+        loading: initialData ? "Updating..." : "Creating...",
+      }}
+    >
+      {shops && (
+        <FormField label="Shop" htmlFor="shopId">
+          {shops.length > 0 ? (
             <select
               id="shopId"
               name="shopId"
               value={formData.shopId}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={selectStyles}
             >
               <option value="">Select a shop</option>
               {shops.map((shop) => (
@@ -199,163 +401,115 @@ export function OrderForm({
                 </option>
               ))}
             </select>
-          </div>
-        )}
-        <div className="space-y-2">
-          <label
-            htmlFor="supplierId"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Supplier
+          ) : (
+            <div className="text-center py-4 border-2 border-dashed rounded-lg">
+              <p className="text-sm text-gray-500">No shops available</p>
+              <Link
+                href="/dashboard/shops/new"
+                className="mt-2 inline-flex items-center text-sm text-blue-600 hover:text-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Create your first shop
+              </Link>
+            </div>
+          )}
+        </FormField>
+      )}
+
+      <FormField label="Status" htmlFor="status">
+        <select
+          id="status"
+          name="status"
+          value={formData.status}
+          onChange={handleChange}
+          required
+          className={selectStyles}
+        >
+          {Object.values(OrderStatus).map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
+        </select>
+      </FormField>
+
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <label className="block text-sm font-medium text-gray-700">
+            Order Items
           </label>
-          <select
-            id="supplierId"
-            name="supplierId"
-            value={formData.supplierId}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          <button
+            type="button"
+            onClick={addOrderItem}
+            className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
           >
-            <option value="">Select a supplier</option>
-            {suppliers.map((supplier) => (
-              <option key={supplier.id} value={supplier.id}>
-                {supplier.name}
-              </option>
-            ))}
-          </select>
+            <Plus className="h-4 w-4" />
+            <span>Add Item</span>
+          </button>
         </div>
 
-        <div className="space-y-2">
-          <label
-            htmlFor="status"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Status
-          </label>
-          <select
-            id="status"
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            {Object.values(OrderStatus).map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <label className="block text-sm font-medium text-gray-700">
-              Order Items
-            </label>
-            <button
-              type="button"
-              onClick={addOrderItem}
-              className="text-sm text-blue-600 hover:text-blue-700"
-            >
-              + Add Item
-            </button>
-          </div>
-
-          {formData.orderItems.map((item, index) => (
-            <div
-              key={index}
-              className="flex gap-2 items-start p-3 border rounded-md"
-            >
-              <div className="flex-1">
-                <select
-                  value={item.productId}
-                  onChange={(e) =>
-                    updateOrderItem(index, "productId", e.target.value)
-                  }
-                  required
-                  className="w-full px-2 py-1 border rounded"
-                >
-                  <option value="">Select a product</option>
-                  {products.map((product) => (
-                    <option key={product.id} value={product.id}>
-                      {product.name} - ¥{product.price}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <input
-                type="number"
-                min="1"
-                value={item.quantity}
-                onChange={(e) =>
-                  updateOrderItem(index, "quantity", parseInt(e.target.value))
-                }
-                required
-                className="w-20 px-2 py-1 border rounded"
-                placeholder="Qty"
-              />
+        <div className="max-h-[40vh] overflow-y-auto pr-2">
+          {formData.orderItems.create.length === 0 ? (
+            <div className="text-center py-8 text-gray-500 border-2 border-dashed rounded-lg">
+              <p>No items added to the order yet</p>
               <button
                 type="button"
-                onClick={() => removeOrderItem(index)}
-                className="text-red-500 hover:text-red-700"
+                onClick={addOrderItem}
+                className="mt-2 text-blue-600 hover:text-blue-700"
               >
-                <Trash2 size={16} />
+                Add your first item
               </button>
             </div>
-          ))}
-        </div>
-
-        <div className="text-right text-lg font-semibold">
-          Total: ¥{calculateTotal(formData.orderItems)}
-        </div>
-
-        <div className="flex justify-end gap-3 mt-6">
-          {standalone && (
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Cancel
-            </button>
+          ) : (
+            <div className="space-y-4">
+              {formData.orderItems.create.map((item, index: number) => {
+                const selectedProduct = products.find(
+                  (p) => p.id === item.productId
+                );
+                return (
+                  <div key={index}>
+                    {!selectedProduct ? (
+                      <div className="mb-2">
+                        <ProductCombobox
+                          products={products}
+                          value={item.productId}
+                          onChange={(productId) =>
+                            updateOrderItem(index, "productId", productId)
+                          }
+                        />
+                      </div>
+                    ) : (
+                      <ProductCard
+                        product={selectedProduct}
+                        quantity={item.quantity}
+                        onQuantityChange={(quantity) =>
+                          updateOrderItem(index, "quantity", quantity)
+                        }
+                        onRemove={() => removeOrderItem(index)}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading
-              ? initialData
-                ? "Updating..."
-                : "Creating..."
-              : initialData
-              ? "Update Order"
-              : "Create Order"}
-          </button>
         </div>
-      </form>
-    </>
-  );
+      </div>
 
-  if (!standalone) {
-    return formContent;
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
-          <button
-            className={`inline-flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${className}`}
-          >
-            <Plus className="h-5 w-5" />
-            <span>{initialData ? "Edit Order" : "Create Order"}</span>
-          </button>
-        )}
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">{formContent}</DialogContent>
-    </Dialog>
+      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-700">Total Items:</span>
+          <span className="font-medium">
+            {formData.orderItems.create.length}
+          </span>
+        </div>
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-gray-700">Total Amount:</span>
+          <span className="text-lg font-semibold">
+            ¥{calculateTotal(formData.orderItems.create)}
+          </span>
+        </div>
+      </div>
+    </BaseFormDialog>
   );
 }

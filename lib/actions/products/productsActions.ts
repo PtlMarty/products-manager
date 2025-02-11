@@ -5,6 +5,17 @@ import db from "@/lib/db/db";
 import { ProductActionResult, productSchema } from "@/types/product";
 import { Product } from "@prisma/client";
 
+export async function getProductsByShopId(shopId: string): Promise<Product[]> {
+  return executeAction({
+    actionFn: async () => {
+      const products = await db.product.findMany({
+        where: { shopId },
+      });
+      return products;
+    },
+  });
+}
+
 export async function createProduct(
   product: Partial<Product>
 ): Promise<ProductActionResult> {

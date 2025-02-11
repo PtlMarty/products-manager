@@ -22,7 +22,38 @@ function OrdersTableContent({
   shops,
   initialOrders,
 }: OrdersTableWrapperProps) {
-  const { orders, handleCreateOrder } = useOrders(shopId, shops, initialOrders);
+  const { orders, handleCreateOrder, handleDeleteOrder } = useOrders(
+    shopId,
+    shops,
+    initialOrders,
+    products || []
+  );
+
+  if (!products || !Array.isArray(products)) {
+    return (
+      <div className="p-4 text-center text-gray-500">
+        Error: Products data is invalid. Please refresh the page.
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="p-4 text-center text-gray-500">
+        No products available. Please add products before creating orders.
+      </div>
+    );
+  }
+
+  const handleViewOrder = (order: Order) => {
+    // TODO: Implement view order functionality
+    console.log("View order:", order);
+  };
+
+  const handleEditOrder = (order: Order) => {
+    // TODO: Implement edit order functionality
+    console.log("Edit order:", order);
+  };
 
   return (
     <OrdersTable
@@ -32,6 +63,9 @@ function OrdersTableContent({
       suppliers={suppliers}
       shops={shops}
       onCreate={handleCreateOrder}
+      onView={handleViewOrder}
+      onEdit={handleEditOrder}
+      onDelete={handleDeleteOrder}
     />
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { OrderFormData } from "@/components/orders/OrderForm";
 import { Button } from "@/components/ui/atoms/button";
 import {
   Tabs,
@@ -70,13 +71,15 @@ const DashboardGlobal = ({
     handleDeleteProduct,
     handleCreateProduct,
     handleUpdateProduct,
+    refreshProducts,
   } = useProducts(initialProducts);
   const { suppliers, removeSupplier, addSupplier } =
     useSuppliers(initialSuppliers);
-  const { orders, handleCreateOrder } = useOrders(
+  const { orders, handleCreateOrder, handleDeleteOrder } = useOrders(
     shops[0]?.id,
     shops,
-    initialOrders
+    initialOrders,
+    products
   );
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     monthlyData: [],
@@ -206,6 +209,15 @@ const DashboardGlobal = ({
     calculateDashboardData();
   }, [calculateDashboardData]);
 
+  // Refresh products after order creation
+  const handleOrderCreate = async (formData: OrderFormData) => {
+    const result = await handleCreateOrder(formData);
+    if (result.success) {
+      await refreshProducts(shops[0].id);
+    }
+    return result;
+  };
+
   if (!shops.length) {
     return <EmptyState />;
   }
@@ -244,7 +256,16 @@ const DashboardGlobal = ({
             orders={orders || []}
             products={products}
             suppliers={suppliers}
-            onCreate={handleCreateOrder}
+            onCreate={handleOrderCreate}
+            onView={(order) => {
+              // TODO: Implement view functionality
+              console.log("View order:", order);
+            }}
+            onEdit={(order) => {
+              // TODO: Implement edit functionality
+              console.log("Edit order:", order);
+            }}
+            onDelete={handleDeleteOrder}
           />
         </TabsContent>
       </Tabs>
