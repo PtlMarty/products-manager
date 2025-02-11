@@ -1,76 +1,48 @@
+"use client";
+
 import {
   createOrder,
-  getOrderById,
   getOrdersByShopId,
 } from "@/lib/actions/orders/ordersActions";
-import { Order, OrderItem, User } from "@prisma/client";
-import { useCallback, useEffect, useState } from "react";
+import { Order, OrderItem, Shop, User } from "@prisma/client";
+import { useCallback, useState } from "react";
 
-type OrderWithUser = Order & { user: User };
+type OrderWithUser = Order & { user: User; shop: Shop };
 
 type CreateOrderInput = Omit<Order, "id" | "createdAt" | "updatedAt"> & {
   orderItems: Omit<OrderItem, "id" | "orderId" | "createdAt" | "updatedAt">[];
 };
 
-export const useOrders = (shopId?: string) => {
-  const [orders, setOrders] = useState<OrderWithUser[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchOrdersByShop = useCallback(async (shopId: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await getOrdersByShopId({ shopId });
-
-      if (result.success && result.data) {
-        setOrders(result.data as OrderWithUser[]);
-        return { success: true, data: result.data };
-      } else {
-        const errorMsg = result.error || "Failed to fetch orders";
-        setError(errorMsg);
-        return { success: false, error: new Error(errorMsg) };
-      }
-    } catch (error) {
-      const errorMsg =
-        error instanceof Error ? error.message : "Failed to fetch orders";
-      setError(errorMsg);
-      return { success: false, error: new Error(errorMsg) };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchOrderById = useCallback(async (orderId: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await getOrderById({ id: orderId });
-
-      if (result.success && result.data) {
-        return { success: true, data: result.data };
-      } else {
-        const errorMsg = result.error || "Failed to fetch order";
-        setError(errorMsg);
-        return { success: false, error: new Error(errorMsg) };
-      }
-    } catch (error) {
-      const errorMsg =
-        error instanceof Error ? error.message : "Failed to fetch order";
-      setError(errorMsg);
-      return { success: false, error: new Error(errorMsg) };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+export const useOrders = (
+  shopId: string,
+  allShops: Shop[] | undefined,
+  initialOrders: OrderWithUser[]
+) => {
+  const [orders, setOrders] = useState<OrderWithUser[]>(initialOrders);
 
   const handleCreateOrder = useCallback(
     async (order: CreateOrderInput) => {
       try {
-        setLoading(true);
         const result = await createOrder(order);
-        if (result.success && shopId) {
-          await fetchOrdersByShop(shopId);
+        if (result.success) {
+          // Refresh orders by fetching them again
+          if (allShops && allShops.length > 0) {
+            const ordersPromises = allShops.map((shop) =>
+              getOrdersByShopId({ shopId: shop.id })
+            );
+            const results = await Promise.all(ordersPromises);
+            const newOrders = results
+              .filter((result) => result.success && result.data)
+              .flatMap((result) => result.data!)
+              .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+              .slice(0, 10);
+            setOrders(newOrders as OrderWithUser[]);
+          } else {
+            const result = await getOrdersByShopId({ shopId });
+            if (result.success && result.data) {
+              setOrders(result.data as OrderWithUser[]);
+            }
+          }
         }
         return result;
       } catch (error) {
@@ -82,26 +54,13 @@ export const useOrders = (shopId?: string) => {
               ? error
               : new Error("Failed to create order"),
         };
-      } finally {
-        setLoading(false);
       }
     },
-    [shopId, fetchOrdersByShop]
+    [shopId, allShops]
   );
-
-  useEffect(() => {
-    if (shopId) {
-      fetchOrdersByShop(shopId);
-    }
-  }, [shopId, fetchOrdersByShop]);
 
   return {
     orders,
-    loading,
-    error,
     handleCreateOrder,
-    setOrders,
-    fetchOrdersByShop,
-    fetchOrderById,
   };
 };

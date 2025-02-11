@@ -46,10 +46,10 @@ export async function getOrdersByShopId({ shopId }: GetOrdersByShopIdProps) {
       include: {
         orderItems: true,
         user: true,
+        shop: true,
       },
     });
 
-    revalidatePath("/orders");
     return { success: true, data: orders };
   } catch (error) {
     console.error("Error fetching orders:", error);

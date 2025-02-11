@@ -12,7 +12,7 @@ import {
 import { useOrders } from "@/lib/hooks/UseOrders";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { useSuppliers } from "@/lib/hooks/UseSuppliers";
-import { Product, Shop, Supplier } from "@prisma/client";
+import { Order, Product, Shop, Supplier, User } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -27,6 +27,7 @@ interface DashboardGlobalProps {
   products: Product[];
   suppliers: Supplier[];
   totalProductsCount: number;
+  initialOrders: (Order & { user: User; shop: Shop })[];
 }
 
 interface DashboardData {
@@ -65,6 +66,7 @@ const DashboardGlobal = ({
   products: initialProducts,
   suppliers: initialSuppliers,
   totalProductsCount,
+  initialOrders,
 }: DashboardGlobalProps) => {
   const { data: session } = useSession();
   const {
@@ -75,7 +77,11 @@ const DashboardGlobal = ({
   } = useProducts(initialProducts);
   const { suppliers, removeSupplier, addSupplier } =
     useSuppliers(initialSuppliers);
-  const { orders, handleCreateOrder } = useOrders(shops[0]?.id);
+  const { orders, handleCreateOrder } = useOrders(
+    shops[0]?.id,
+    shops,
+    initialOrders
+  );
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     monthlyData: [],
     categoryData: [],

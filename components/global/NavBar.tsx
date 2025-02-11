@@ -66,12 +66,7 @@ const NavBar = async () => {
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <Link
-                  href="/dashboard"
-                  className="text-gray-200 hover:text-white font-medium"
-                >
-                  Dashboard
-                </Link>
+
                 <Link
                   href="/about"
                   className="text-gray-200 hover:text-white font-medium"
