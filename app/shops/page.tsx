@@ -4,7 +4,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/molecules/card";
 import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
 import { auth } from "@/lib/auth";
 import Link from "next/link";

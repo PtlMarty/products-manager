@@ -9,15 +9,13 @@
 //TODO: Add a variants field to the product form
 
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  BaseFormDialog,
+  FormField,
+  inputStyles,
+  selectStyles,
+} from "@/components/ui/organisms/base-form-dialog";
 import { productSchema } from "@/types/product";
 import { Product, Supplier } from "@prisma/client";
-import { Plus } from "lucide-react";
 import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 
@@ -30,6 +28,8 @@ interface ProductFormProps {
   trigger?: React.ReactNode;
   title?: string;
   className?: string;
+  initialData?: Product;
+  standalone?: boolean;
 }
 
 const initialState = {
@@ -47,10 +47,13 @@ export function ProductForm({
   trigger,
   title = "Add New Product",
   className,
+  initialData,
+  standalone = true,
 }: ProductFormProps) {
   const pathname = usePathname();
-  const [formData, setFormData] = useState({ ...initialState, shopId });
-  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState(
+    initialData || { ...initialState, shopId }
+  );
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -61,16 +64,18 @@ export function ProductForm({
 
   if (!shouldShowForm) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setError(null);
     setIsLoading(true);
 
     try {
       const validatedData = productSchema.parse(formData);
-      await onSubmit(validatedData);
-      setFormData({ ...initialState, shopId });
-      setOpen(false);
+      const result = await onSubmit(validatedData);
+      if (result.success) {
+        setFormData({ ...initialState, shopId });
+      } else {
+        throw result.error;
+      }
     } catch (error) {
       console.error("Form error:", error);
       setError(error instanceof Error ? error.message : "Invalid form data");
@@ -95,131 +100,78 @@ export function ProductForm({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
-          <button
-            className={`inline-flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${className}`}
-          >
-            <Plus className="h-5 w-5" />
-            <span>Add Product</span>
-          </button>
-        )}
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-gray-900">
-            {title}
-          </DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-          {error && (
-            <div className="text-red-500 text-sm bg-red-50 p-3 rounded-md">
-              {error}
-            </div>
-          )}
-          <div className="space-y-2">
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Product Name
-            </label>
-            <input
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Enter product name"
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div className="space-y-2">
-            <label
-              htmlFor="price"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Price (¥)
-            </label>
-            <input
-              id="price"
-              name="price"
-              step="0.01"
-              min="0"
-              value={formData.price}
-              onChange={handleChange}
-              placeholder="Enter price"
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div className="space-y-2">
-            <label
-              htmlFor="stock"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Stock
-            </label>
-            <input
-              id="stock"
-              name="stock"
-              type="number"
-              value={formData.stock}
-              onChange={handleChange}
-              placeholder="Enter stock"
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div className="space-y-2">
-            <label
-              htmlFor="supplierId"
-              className="block text-base font-medium text-gray-700 mb-1"
-            >
-              Supplier
-            </label>
-            <select
-              id="supplierId"
-              name="supplierId"
-              value={formData.supplierId}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white cursor-pointer appearance-none"
-            >
-              <option value="" className="text-gray-500 text-lg">
-                Select a supplier
-              </option>
-              {suppliers.map((supplier) => (
-                <option
-                  key={supplier.id}
-                  value={supplier.id}
-                  className="py-2 text-lg"
-                >
-                  {supplier.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex justify-end gap-3 mt-6">
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? "Creating..." : "Create Product"}
-            </button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <BaseFormDialog
+      title={title}
+      trigger={trigger}
+      className={className}
+      standalone={standalone}
+      isLoading={isLoading}
+      error={error}
+      onSubmit={handleSubmit}
+      submitLabel={{
+        default: initialData ? "Update Product" : "Create Product",
+        loading: initialData ? "Updating..." : "Creating...",
+      }}
+    >
+      <FormField label="Product Name" htmlFor="name">
+        <input
+          id="name"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          placeholder="Enter product name"
+          required
+          className={inputStyles}
+        />
+      </FormField>
+
+      <FormField label="Price (¥)" htmlFor="price">
+        <input
+          id="price"
+          name="price"
+          type="number"
+          step="0.01"
+          min="0"
+          value={formData.price}
+          onChange={handleChange}
+          placeholder="Enter price"
+          required
+          className={inputStyles}
+        />
+      </FormField>
+
+      <FormField label="Stock" htmlFor="stock">
+        <input
+          id="stock"
+          name="stock"
+          type="number"
+          value={formData.stock}
+          onChange={handleChange}
+          placeholder="Enter stock"
+          required
+          className={inputStyles}
+        />
+      </FormField>
+
+      <FormField label="Supplier" htmlFor="supplierId">
+        <select
+          id="supplierId"
+          name="supplierId"
+          value={formData.supplierId}
+          onChange={handleChange}
+          required
+          className={selectStyles}
+        >
+          <option value="" className="text-gray-500">
+            Select a supplier
+          </option>
+          {suppliers.map((supplier) => (
+            <option key={supplier.id} value={supplier.id}>
+              {supplier.name}
+            </option>
+          ))}
+        </select>
+      </FormField>
+    </BaseFormDialog>
   );
 }

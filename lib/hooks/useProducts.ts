@@ -1,9 +1,11 @@
 import {
   createProduct,
   deleteProduct,
+  getProductsByShopId,
+  updateProduct,
 } from "@/lib/actions/products/productsActions";
 import { Product } from "@prisma/client";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 /**
  * Custom hook for managing product operations (create, delete, state management)
@@ -18,6 +20,31 @@ export const useProducts = (initialProducts: Product[] = []) => {
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
   );
+
+  // Function to refresh products
+  const refreshProducts = useCallback(async (shopId: string) => {
+    try {
+      const updatedProducts = await getProductsByShopId(shopId);
+      setProducts(
+        [...updatedProducts].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+      );
+    } catch (error) {
+      console.error("Failed to refresh products:", error);
+    }
+  }, []);
+
+  // Update products when initialProducts changes
+  useEffect(() => {
+    setProducts(
+      [...initialProducts].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+    );
+  }, [initialProducts]);
 
   /**
    * Handles product deletion with confirmation
@@ -64,8 +91,7 @@ export const useProducts = (initialProducts: Product[] = []) => {
     try {
       const result = await createProduct(productData);
       if (result.success && result.data) {
-        // Update local state with the newly created product
-        setProducts([...products, result.data]);
+        await refreshProducts(productData.shopId as string);
         return { success: true, data: result.data };
       }
       return { success: false };
@@ -82,11 +108,30 @@ export const useProducts = (initialProducts: Product[] = []) => {
     }
   };
 
+  const handleUpdateProduct = async (
+    productId: string,
+    productData: Partial<Product>
+  ): Promise<{ success: boolean; data?: Product; error?: Error }> => {
+    try {
+      const result = await updateProduct(productId, productData);
+      if (result.success && result.data) {
+        await refreshProducts(productData.shopId as string);
+        return { success: true, data: result.data };
+      }
+      return { success: false };
+    } catch (error) {
+      console.error("Failed to update product:", error);
+      return { success: false };
+    }
+  };
+
   // Return products state and handler functions
   return {
     products,
     setProducts,
+    refreshProducts,
     handleDeleteProduct,
     handleCreateProduct,
+    handleUpdateProduct,
   };
 };

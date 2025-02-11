@@ -1,10 +1,8 @@
 "use server";
 
-// TODO: add the sign in action
-
 import { executeAction } from "@/lib/actions/executeAction";
 import db from "@/lib/db/db";
-import { schema } from "@/lib/zodSchema";
+import { schema } from "@/lib/validation/zodSchema";
 import bcrypt from "bcryptjs";
 
 type SignUpResult = {

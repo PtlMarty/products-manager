@@ -1,13 +1,13 @@
-import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
-import { auth } from "@/lib/auth";
-import Image from "next/image";
-import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from "@/components/ui/molecules/dropdown-menu";
+import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
+import { auth } from "@/lib/auth";
+import Image from "next/image";
+import Link from "next/link";
 import MobileNav from "./MobileNav";
 
 const NavBar = async () => {
@@ -66,12 +66,7 @@ const NavBar = async () => {
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <Link
-                  href="/dashboard"
-                  className="text-gray-200 hover:text-white font-medium"
-                >
-                  Dashboard
-                </Link>
+
                 <Link
                   href="/about"
                   className="text-gray-200 hover:text-white font-medium"

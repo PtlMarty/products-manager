@@ -1,5 +1,5 @@
 import db from "@/lib/db/db";
-import { schema } from "@/lib/zodSchema";
+import { schema } from "@/lib/validation/zodSchema";
 import { Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";

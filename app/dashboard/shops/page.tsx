@@ -2,7 +2,7 @@ import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
 import { getSession } from "@/lib/actions/getSession";
 import Link from "next/link";
 
-// TODO: Add a  Page with all  shops
+// TODO: improve the shops page
 
 const ShopsPage = async () => {
   const session = await getSession();
@@ -41,7 +41,6 @@ const ShopsPage = async () => {
               </Link>
             </div>
           ))}
-          <div>{/* TODO: Add a dialog to create a new shop */}</div>
         </div>
       )}
     </div>

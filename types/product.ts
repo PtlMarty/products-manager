@@ -1,4 +1,4 @@
-import { Product, Shop, Supplier } from "@prisma/client";
+import { Product, Supplier } from "@prisma/client";
 import * as React from "react";
 import { z } from "zod";
 
@@ -19,11 +19,12 @@ export interface ProductActionResult {
 }
 
 export interface ProductsTableProps {
-  products: Product[];
-  suppliers: Supplier[];
-  shops: Shop[];
-  onDelete: (id: string) => Promise<{ success: boolean; error?: Error }>;
+  data: Product[];
+  onEdit?: (product: Product) => void;
+  onDelete?: (product: Product) => void;
+  isLoading?: boolean;
   className?: string;
+  suppliers: Supplier[];
 }
 
 export interface ProductFormProps {

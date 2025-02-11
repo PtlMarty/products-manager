@@ -1,5 +1,3 @@
-// TODO: Add a layout for the shop page
-
 import { ReactNode } from "react";
 
 interface LayoutProps {

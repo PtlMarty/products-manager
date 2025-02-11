@@ -1,13 +1,13 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/atoms/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/molecules/card";
 import { Supplier } from "@/lib/hooks/UseSuppliers";
 import { Shop } from "@prisma/client";
 import { Plus } from "lucide-react";

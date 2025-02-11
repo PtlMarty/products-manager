@@ -1,105 +1,67 @@
 import { ProductsTableProps } from "@/types/product";
+import { Product } from "@prisma/client";
+import { Pencil, Trash2 } from "lucide-react";
+import { BaseTable } from "../ui/organisms/base-table";
 
 //TODO: Add stock, category, description, image, tags, attributes, variants to the products table
 
 export function ProductsTable({
-  products,
-  suppliers,
-  shops,
+  data,
+  onEdit,
   onDelete,
+  isLoading,
   className,
+  suppliers,
 }: ProductsTableProps) {
-  return (
-    <div className={`overflow-x-auto bg-white shadow rounded-lg ${className}`}>
-      {/* Mobile View */}
-      <div className="block sm:hidden">
-        {products.map((product) => (
-          <div
-            key={product.id}
-            className="border-b p-4 space-y-2 hover:bg-gray-50"
-          >
-            <div className="flex justify-between items-start">
-              <div className="font-medium">{product.name}</div>
-              <button
-                className="text-red-600 hover:text-red-800"
-                onClick={() => onDelete(product.id)}
-              >
-                Delete
-              </button>
-            </div>
-            <div className="text-sm text-gray-600 space-y-1">
-              <div>Price: ¥{product.price}</div>
-              <div>
-                Shop: {shops.find((s) => s.id === product.shopId)?.name}
-              </div>
-              <div>
-                Supplier:
-                {suppliers.find((s) => s.id === product.supplierId)?.name}
-              </div>
-              <div>
-                Created: {new Date(product.createdAt).toLocaleDateString()}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+  const columns = [
+    {
+      header: "Product Name",
+      accessor: "name" as const,
+    },
+    {
+      header: "Price (¥)",
+      accessor: (product: Product) => `¥${product.price}`,
+    },
+    {
+      header: "Stock",
+      accessor: "stock" as const,
+    },
+    {
+      header: "Supplier",
+      accessor: (product: Product) =>
+        suppliers.find((s) => s.id === product.supplierId)?.name || "N/A",
+    },
+    {
+      header: "Created At",
+      accessor: (product: Product) =>
+        new Date(product.createdAt).toLocaleDateString(),
+    },
+  ];
 
-      {/* Desktop View */}
-      <div className="hidden sm:block">
-        <table className="min-w-full border-collapse">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
-                Product Name
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
-                Price (¥)
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
-                Shop
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
-                Supplier
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
-                Created At
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
-                Stock
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {products.map((product) => (
-              <tr key={product.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm">{product.name}</td>
-                <td className="px-4 py-3 text-sm">¥{product.price}</td>
-                <td className="px-4 py-3 text-sm">
-                  {shops.find((s) => s.id === product.shopId)?.name}
-                </td>
-                <td className="px-4 py-3 text-sm">
-                  {suppliers.find((s) => s.id === product.supplierId)?.name}
-                </td>
-                <td className="px-4 py-3 text-sm">
-                  {new Date(product.createdAt).toLocaleDateString()}
-                </td>
-                <td className="px-4 py-3 text-sm">{product.stock}</td>
-                <td className="px-4 py-3 text-sm">
-                  <button
-                    className="text-red-600 hover:text-red-800 transition-colors"
-                    onClick={() => onDelete(product.id)}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+  const actions = [
+    {
+      icon: <Pencil size={16} />,
+      onClick: (product: Product) => onEdit?.(product),
+      label: "Edit product",
+      className: "text-gray-600 hover:text-gray-800 transition-colors",
+    },
+    {
+      icon: <Trash2 size={16} />,
+      onClick: (product: Product) => onDelete?.(product),
+      label: "Delete product",
+      className: "text-red-600 hover:text-red-800 transition-colors",
+    },
+  ];
+
+  return (
+    <BaseTable<Product>
+      data={data}
+      columns={columns}
+      actions={actions}
+      isLoading={isLoading}
+      className={className}
+      emptyMessage="No products found"
+      mobileAccessor={(product) => product.name}
+    />
   );
 }

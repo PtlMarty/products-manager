@@ -1,250 +1,213 @@
 // seed.ts
-import { saltAndHashPassword } from "@/utils/saltAndHash";
-import { PrismaClient } from "@prisma/client";
+import { OrderStatus, PrismaClient, Role } from "@prisma/client";
+import { saltAndHashPassword } from "../lib/utils/saltAndHash";
 
-const seedClient = new PrismaClient({
-  log: ["error", "warn"],
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
-  },
-});
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Seeding database...");
+  // Clean the database
+  await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.shopSupplier.deleteMany();
+  await prisma.supplier.deleteMany();
+  await prisma.shopUser.deleteMany();
+  await prisma.shop.deleteMany();
+  await prisma.user.deleteMany();
 
-  // Clean up existing data
-  console.log("Cleaning up existing data...");
-  await seedClient.orderItem.deleteMany({});
-  await seedClient.order.deleteMany({});
-  await seedClient.product.deleteMany({});
-  await seedClient.shopSupplier.deleteMany({});
-  await seedClient.shopUser.deleteMany({});
-  await seedClient.supplier.deleteMany({});
-  await seedClient.shop.deleteMany({});
-  await seedClient.session.deleteMany({});
-  await seedClient.user.deleteMany({});
-  console.log("Cleanup completed.");
+  // Create users
+  const adminPassword = await saltAndHashPassword("admin123");
+  const userPassword = await saltAndHashPassword("user123");
 
-  // Create users with different roles
-  const admin = await seedClient.user.create({
+  const admin = await prisma.user.create({
     data: {
       email: "admin@example.com",
       name: "Admin User",
-      password: await saltAndHashPassword("admin123"),
-      role: "ADMIN",
+      password: adminPassword,
+      role: Role.ADMIN,
     },
   });
 
-  const seller = await seedClient.user.create({
+  const user = await prisma.user.create({
     data: {
-      email: "seller@example.com",
-      name: "Seller User",
-      password: await saltAndHashPassword("seller123"),
-      role: "SELLER",
-    },
-  });
-
-  const buyer = await seedClient.user.create({
-    data: {
-      email: "buyer@example.com",
-      name: "Buyer User",
-      password: await saltAndHashPassword("buyer123"),
-      role: "BUYER",
+      email: "user@example.com",
+      name: "Regular User",
+      password: userPassword,
+      role: Role.USER,
     },
   });
 
   // Create shops
-  const shops = await Promise.all(
-    [
-      "TechHub Electronics",
-      "Fresh Foods Market",
-      "Fashion Forward",
-      "Home Essentials",
-      "Sports World",
-    ].map((shopName) =>
-      seedClient.shop.create({
-        data: { name: shopName },
-      })
-    )
-  );
-
-  // Create suppliers with complete information
-  const suppliers = await Promise.all(
-    [
-      {
-        name: "Global Electronics Ltd",
-        email: "contact@globalelectronics.com",
-        phone: "+1-555-0123",
-        address: "123 Tech Street, Silicon Valley, CA",
-      },
-      {
-        name: "Fresh Produce Co",
-        email: "info@freshproduce.com",
-        phone: "+1-555-0124",
-        address: "456 Farm Road, Agricultural District",
-      },
-      {
-        name: "Textile Industries",
-        email: "contact@textileind.com",
-        phone: "+1-555-0125",
-        address: "789 Fashion Ave, Design District",
-      },
-      {
-        name: "Home Goods Manufacturing",
-        email: "sales@homegoods.com",
-        phone: "+1-555-0126",
-        address: "321 Industrial Park",
-      },
-      {
-        name: "Sports Equipment Inc",
-        email: "info@sportsequip.com",
-        phone: "+1-555-0127",
-        address: "654 Stadium Drive",
-      },
-    ].map((supplierData) =>
-      seedClient.supplier.create({
-        data: supplierData,
-      })
-    )
-  );
-
-  // Link shops with suppliers
-  for (const shop of shops) {
-    // Each shop gets 2-3 suppliers
-    const shopSuppliers = suppliers.slice(0, Math.floor(Math.random() * 2) + 2);
-    await Promise.all(
-      shopSuppliers.map((supplier) =>
-        seedClient.shopSupplier.create({
-          data: {
-            shopId: shop.id,
-            supplierId: supplier.id,
-          },
-        })
-      )
-    );
-  }
-
-  // Link users and shops with proper roles
-  await Promise.all([
-    // Admin gets access to all shops
-    ...shops.map((shop) =>
-      seedClient.shopUser.create({
-        data: {
-          shopId: shop.id,
+  const shop1 = await prisma.shop.create({
+    data: {
+      name: "Electronics Store",
+      users: {
+        create: {
           userId: admin.id,
-          role: "ADMIN",
+          role: Role.ADMIN,
         },
-      })
-    ),
-    // Seller gets access to first 3 shops
-    ...shops.slice(0, 3).map((shop) =>
-      seedClient.shopUser.create({
-        data: {
-          shopId: shop.id,
-          userId: seller.id,
-          role: "SELLER",
+      },
+    },
+  });
+
+  const shop2 = await prisma.shop.create({
+    data: {
+      name: "Fashion Boutique",
+      users: {
+        create: {
+          userId: user.id,
+          role: Role.USER,
         },
-      })
-    ),
-    // Buyer gets access to all shops
-    ...shops.map((shop) =>
-      seedClient.shopUser.create({
-        data: {
-          shopId: shop.id,
-          userId: buyer.id,
-          role: "BUYER",
+      },
+    },
+  });
+
+  // Create suppliers
+  const supplier1 = await prisma.supplier.create({
+    data: {
+      name: "Tech Wholesale Co.",
+      email: "tech@supplier.com",
+      phone: "123-456-7890",
+      address: "123 Tech Street",
+      shops: {
+        create: {
+          shopId: shop1.id,
         },
-      })
-    ),
+      },
+    },
+  });
+
+  const supplier2 = await prisma.supplier.create({
+    data: {
+      name: "Fashion Supply Inc.",
+      email: "fashion@supplier.com",
+      phone: "098-765-4321",
+      address: "456 Fashion Avenue",
+      shops: {
+        create: {
+          shopId: shop2.id,
+        },
+      },
+    },
+  });
+
+  // Create products
+  const products = await Promise.all([
+    prisma.product.create({
+      data: {
+        name: "Smartphone X",
+        price: 99900, // $999.00
+        stock: 50,
+        shopId: shop1.id,
+        supplierId: supplier1.id,
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: "Laptop Pro",
+        price: 149900, // $1,499.00
+        stock: 30,
+        shopId: shop1.id,
+        supplierId: supplier1.id,
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: "Designer Jeans",
+        price: 7999, // $79.99
+        stock: 100,
+        shopId: shop2.id,
+        supplierId: supplier2.id,
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: "Premium T-Shirt",
+        price: 2999, // $29.99
+        stock: 200,
+        shopId: shop2.id,
+        supplierId: supplier2.id,
+      },
+    }),
   ]);
 
-  // Create products with stock
-  const productsData = [
-    { name: "4K Smart TV", price: 69999, stock: 10, category: "Electronics" },
-    { name: "Organic Bananas", price: 299, stock: 100, category: "Groceries" },
-    { name: "Designer Jeans", price: 7999, stock: 50, category: "Fashion" },
-    { name: "Memory Foam Pillow", price: 2999, stock: 30, category: "Home" },
-    { name: "Basketball", price: 2499, stock: 25, category: "Sports" },
+  // Create orders with different statuses and dates
+  const orderStatuses = [
+    OrderStatus.PENDING,
+    OrderStatus.CONFIRMED,
+    OrderStatus.SHIPPED,
+    OrderStatus.DELIVERED,
+    OrderStatus.CANCELLED,
   ];
 
-  // Create products for each shop with different suppliers
-  const createdProducts = await Promise.all(
-    shops.flatMap((shop) =>
-      productsData.map((product, index) =>
-        seedClient.product.create({
-          data: {
-            name: `${product.name} - ${shop.name}`,
-            price: product.price,
-            stock: product.stock,
-            shopId: shop.id,
-            supplierId: suppliers[index % suppliers.length].id,
-          },
-        })
-      )
-    )
-  );
+  const createOrder = async (
+    shopId: string,
+    userId: string,
+    daysAgo: number,
+    status: OrderStatus
+  ) => {
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
 
-  // Create sample orders
-  const orderStatuses = [
-    "PENDING",
-    "CONFIRMED",
-    "SHIPPED",
-    "DELIVERED",
-  ] as const;
-
-  // Create 5 sample orders
-  for (let i = 0; i < 5; i++) {
-    const shop = shops[i % shops.length];
-    const supplier = suppliers[i % suppliers.length];
-    const shopProducts = createdProducts.filter((p) => p.shopId === shop.id);
-
-    // Create order
-    const order = await seedClient.order.create({
+    const order = await prisma.order.create({
       data: {
-        shopId: shop.id,
-        supplierId: supplier.id,
-        userId: buyer.id,
-        status: orderStatuses[i % orderStatuses.length],
+        shopId,
+        userId,
+        supplierId: shopId === shop1.id ? supplier1.id : supplier2.id,
+        status,
         totalAmount: 0, // Will be updated after adding items
+        createdAt: date,
+        updatedAt: date,
       },
     });
 
-    // Add 2-3 products to each order
-    const orderItems = await Promise.all(
-      shopProducts.slice(0, 2 + (i % 2)).map((product) =>
-        seedClient.orderItem.create({
-          data: {
-            orderId: order.id,
-            productId: product.id,
-            quantity: 1 + Math.floor(Math.random() * 5),
-            price: product.price,
-          },
-        })
-      )
-    );
+    // Add random products to the order
+    const shopProducts = products.filter((p) => p.shopId === shopId);
+    const numItems = Math.floor(Math.random() * 3) + 1; // 1-3 items per order
+    let totalAmount = 0;
 
-    // Calculate and update total amount
-    const totalAmount = orderItems.reduce(
-      (sum: number, item: { price: number; quantity: number }) =>
-        sum + item.price * item.quantity,
-      0
-    );
-    await seedClient.order.update({
+    for (let i = 0; i < numItems; i++) {
+      const product =
+        shopProducts[Math.floor(Math.random() * shopProducts.length)];
+      const quantity = Math.floor(Math.random() * 3) + 1; // 1-3 quantity per item
+      totalAmount += product.price * quantity;
+
+      await prisma.orderItem.create({
+        data: {
+          orderId: order.id,
+          productId: product.id,
+          quantity,
+          price: product.price,
+        },
+      });
+    }
+
+    // Update order total
+    await prisma.order.update({
       where: { id: order.id },
       data: { totalAmount },
     });
+  };
+
+  // Create 20 orders with different statuses and dates
+  for (let i = 0; i < 20; i++) {
+    const status =
+      orderStatuses[Math.floor(Math.random() * orderStatuses.length)];
+    const daysAgo = Math.floor(Math.random() * 30); // Orders from last 30 days
+    const shopId = Math.random() > 0.5 ? shop1.id : shop2.id;
+    const userId = Math.random() > 0.5 ? admin.id : user.id;
+
+    await createOrder(shopId, userId, daysAgo, status);
   }
 
-  console.log("Seeding completed successfully.");
+  console.log("Seed completed successfully!");
 }
 
 main()
-  .catch((error) => {
-    console.error("Seeding error:", error);
+  .catch((e) => {
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {
-    await seedClient.$disconnect();
+    await prisma.$disconnect();
   });

@@ -1,23 +1,31 @@
 "use client";
 
-//TODO: Add Orders and Suppliers
-
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { OrderFormData } from "@/components/orders/OrderForm";
+import { Button } from "@/components/ui/atoms/button";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/molecules/tabs";
+import { useOrders } from "@/lib/hooks/UseOrders";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { useSuppliers } from "@/lib/hooks/UseSuppliers";
-import { Product, Shop, Supplier } from "@prisma/client";
+import { Order, Product, Shop, Supplier, User } from "@prisma/client";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import OrdersTable from "../orders/OrdersTable";
 import { DashboardCharts } from "./charts/DashboardCharts";
 import { DashboardMetrics } from "./charts/DashboardMetrics";
 import { DashboardProducts } from "./DashboardProducts";
 import { DashboardSuppliers } from "./DashboardSuppliers";
+
 interface DashboardGlobalProps {
   shops: Shop[];
   products: Product[];
   suppliers: Supplier[];
   totalProductsCount: number;
+  initialOrders: (Order & { user: User; shop: Shop; supplier: Supplier })[];
 }
 
 interface DashboardData {
@@ -56,11 +64,23 @@ const DashboardGlobal = ({
   products: initialProducts,
   suppliers: initialSuppliers,
   totalProductsCount,
+  initialOrders,
 }: DashboardGlobalProps) => {
-  const { products, handleDeleteProduct, handleCreateProduct } =
-    useProducts(initialProducts);
+  const {
+    products,
+    handleDeleteProduct,
+    handleCreateProduct,
+    handleUpdateProduct,
+    refreshProducts,
+  } = useProducts(initialProducts);
   const { suppliers, removeSupplier, addSupplier } =
     useSuppliers(initialSuppliers);
+  const { orders, handleCreateOrder, handleDeleteOrder } = useOrders(
+    shops[0]?.id,
+    shops,
+    initialOrders,
+    products
+  );
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     monthlyData: [],
     categoryData: [],
@@ -189,17 +209,27 @@ const DashboardGlobal = ({
     calculateDashboardData();
   }, [calculateDashboardData]);
 
+  // Refresh products after order creation
+  const handleOrderCreate = async (formData: OrderFormData) => {
+    const result = await handleCreateOrder(formData);
+    if (result.success) {
+      await refreshProducts(shops[0].id);
+    }
+    return result;
+  };
+
   if (!shops.length) {
     return <EmptyState />;
   }
 
   return (
     <div className="p-2 sm:p-4 space-y-4 max-w-[1400px] mx-auto">
-      {/* add onglet for supplier and product */}
+      {/*  onglet for supplier and product */}
       <Tabs defaultValue="products">
         <TabsList>
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
+          <TabsTrigger value="orders">Orders</TabsTrigger>
         </TabsList>
 
         <TabsContent value="products">
@@ -209,6 +239,7 @@ const DashboardGlobal = ({
             suppliers={suppliers}
             onDelete={handleDeleteProduct}
             onSubmit={handleCreateProduct}
+            onUpdate={handleUpdateProduct}
           />
         </TabsContent>
         <TabsContent value="suppliers">
@@ -217,6 +248,24 @@ const DashboardGlobal = ({
             shops={shops}
             onDelete={removeSupplier}
             onSubmit={addSupplier}
+          />
+        </TabsContent>
+        <TabsContent value="orders">
+          <OrdersTable
+            shopId={shops[0].id}
+            orders={orders || []}
+            products={products}
+            suppliers={suppliers}
+            onCreate={handleOrderCreate}
+            onView={(order) => {
+              // TODO: Implement view functionality
+              console.log("View order:", order);
+            }}
+            onEdit={(order) => {
+              // TODO: Implement edit functionality
+              console.log("Edit order:", order);
+            }}
+            onDelete={handleDeleteOrder}
           />
         </TabsContent>
       </Tabs>

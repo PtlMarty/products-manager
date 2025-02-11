@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Modal } from "@/components/ui/modal";
+import { Button } from "@/components/ui/atoms/button";
+import { Input } from "@/components/ui/atoms/input";
+import { Modal } from "@/components/ui/organisms/modal";
 import { useSuppliers } from "@/lib/hooks/UseSuppliers";
 import { Shop } from "@prisma/client";
 import { useState } from "react";
