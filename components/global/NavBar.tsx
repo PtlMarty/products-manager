@@ -8,6 +8,7 @@ import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
 import { auth } from "@/lib/auth";
 import Image from "next/image";
 import Link from "next/link";
+import { LogoutButton } from "../auth/LogoutButton";
 import MobileNav from "./MobileNav";
 
 const NavBar = async () => {
@@ -79,6 +80,7 @@ const NavBar = async () => {
                 >
                   Contacts
                 </Link>
+                <LogoutButton />
               </>
             ) : (
               <>
