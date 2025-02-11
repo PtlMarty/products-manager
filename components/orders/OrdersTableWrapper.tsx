@@ -17,7 +17,6 @@ interface OrdersTableWrapperProps {
 
 function OrdersTableContent({
   shopId,
-  userId,
   products,
   suppliers,
   shops,
@@ -29,9 +28,9 @@ function OrdersTableContent({
     <OrdersTable
       orders={orders}
       shopId={shopId}
-      userId={userId}
       products={products}
       suppliers={suppliers}
+      shops={shops}
       onCreate={handleCreateOrder}
     />
   );

@@ -2,7 +2,6 @@
 
 import {
   Order,
-  OrderItem,
   OrderStatus,
   Product,
   Shop,
@@ -10,36 +9,34 @@ import {
   User,
 } from "@prisma/client";
 import { Eye, Pencil, Trash2 } from "lucide-react";
+import type { OrderFormData } from "./OrderForm";
 import { OrderForm } from "./OrderForm";
 
-type CreateOrderInput = Omit<Order, "id" | "createdAt" | "updatedAt"> & {
-  orderItems: Omit<OrderItem, "id" | "orderId" | "createdAt" | "updatedAt">[];
-};
-
-interface OrdersProps {
+interface OrdersTableProps {
   orders: (Order & { user: User; shop: Shop })[];
   shopId: string;
-  userId: string;
   products: Product[];
   suppliers: Supplier[];
+  shops?: Shop[];
+  onCreate: (
+    order: OrderFormData
+  ) => Promise<{ success: boolean; data?: Order; error?: Error }>;
   onDelete?: (order: Order) => void;
   onEdit?: (order: Order) => void;
   onView?: (order: Order) => void;
-  onCreate?: (
-    order: CreateOrderInput
-  ) => Promise<{ success: boolean; data?: Order; error?: Error }>;
 }
 
 const OrdersTable = ({
   orders,
   shopId,
-  products = [],
-  suppliers = [],
+  products,
+  suppliers,
+  shops,
   onDelete = (order) => console.log("Delete order:", order),
   onEdit = (order) => console.log("Edit order:", order),
   onView = (order) => console.log("View order:", order),
   onCreate,
-}: OrdersProps) => {
+}: OrdersTableProps) => {
   // Sort orders by creation date (newest first) and take last 10
   const latestOrders = [...orders]
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
@@ -63,22 +60,15 @@ const OrdersTable = ({
   };
 
   return (
-    <>
-      <div className="p-4 border-b flex justify-center items-center">
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Orders</h3>
         <OrderForm
           shopId={shopId}
           products={products}
           suppliers={suppliers}
-          onSubmit={async (order) => {
-            if (onCreate) {
-              await onCreate(order as unknown as CreateOrderInput);
-              return { success: true };
-            }
-            return {
-              success: false,
-              error: new Error("onCreate not provided"),
-            };
-          }}
+          shops={shops}
+          onSubmit={onCreate}
         />
       </div>
 
@@ -226,7 +216,7 @@ const OrdersTable = ({
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

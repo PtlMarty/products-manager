@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/organisms/dialog";
-import { Order, OrderStatus, Product, Supplier } from "@prisma/client";
+import { Order, OrderStatus, Product, Shop, Supplier } from "@prisma/client";
 import { Plus, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 
@@ -17,7 +17,7 @@ interface OrderItem {
   price: number;
 }
 
-interface OrderFormData {
+export interface OrderFormData {
   totalAmount: number;
   status: OrderStatus;
   shopId: string;
@@ -29,6 +29,7 @@ interface OrderFormProps {
   shopId: string;
   products: Product[];
   suppliers: Supplier[];
+  shops?: Shop[];
   onSubmit: (
     order: OrderFormData
   ) => Promise<{ success: boolean; data?: Order; error?: Error }>;
@@ -51,6 +52,7 @@ export function OrderForm({
   shopId,
   products = [],
   suppliers = [],
+  shops,
   onSubmit,
   trigger,
   title = "Create New Order",
@@ -172,6 +174,31 @@ export function OrderForm({
         {error && (
           <div className="text-red-500 text-sm bg-red-50 p-3 rounded-md">
             {error}
+          </div>
+        )}
+        {shops && shops.length > 0 && (
+          <div className="space-y-2">
+            <label
+              htmlFor="shopId"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Shop
+            </label>
+            <select
+              id="shopId"
+              name="shopId"
+              value={formData.shopId}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Select a shop</option>
+              {shops.map((shop) => (
+                <option key={shop.id} value={shop.id}>
+                  {shop.name}
+                </option>
+              ))}
+            </select>
           </div>
         )}
         <div className="space-y-2">

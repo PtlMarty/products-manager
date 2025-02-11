@@ -1,5 +1,6 @@
 "use client";
 
+import { OrderFormData } from "@/components/orders/OrderForm";
 import {
   createOrder,
   getOrdersByShopId,
@@ -21,9 +22,19 @@ export const useOrders = (
   const [orders, setOrders] = useState<OrderWithUser[]>(initialOrders);
 
   const handleCreateOrder = useCallback(
-    async (order: CreateOrderInput) => {
+    async (formData: OrderFormData) => {
       try {
-        const result = await createOrder(order);
+        // Convert OrderFormData to CreateOrderInput
+        const orderInput: CreateOrderInput = {
+          shopId: formData.shopId || shopId, // Use form shopId if provided, otherwise use default
+          supplierId: formData.supplierId,
+          totalAmount: formData.totalAmount,
+          status: formData.status,
+          userId: "", // This will be set by the server
+          orderItems: formData.orderItems,
+        };
+
+        const result = await createOrder(orderInput);
         if (result.success) {
           // Refresh orders by fetching them again
           if (allShops && allShops.length > 0) {

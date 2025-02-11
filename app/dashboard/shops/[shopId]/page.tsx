@@ -7,8 +7,6 @@ import { getSuppliers } from "@/lib/actions/suppliers/supplierActions";
 import { Order, Shop, User } from "@prisma/client";
 import { redirect } from "next/navigation";
 
-// TODO: Add a dashboard Shop Page with all data from specific shop with shopId
-
 interface PageProps {
   params: Promise<{ shopId: string }>;
 }

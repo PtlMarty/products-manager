@@ -1,11 +1,6 @@
 "use server";
 
-// TODO: add actions for orders
-// - get orders by shop id
-// - get order by id
-// - create order
-// - update order
-// - delete order
+// TODO: add actions for orders edit, delete, update
 
 import { auth } from "@/lib/auth";
 import db from "@/lib/db/db";

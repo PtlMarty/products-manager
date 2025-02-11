@@ -1,5 +1,4 @@
-// TODO: Add an about page
-
+//TODO improve the about page
 const AboutPage = () => {
   return (
     <div className="flex flex-col items-center justify-center gap-16 mt-12 h-full">

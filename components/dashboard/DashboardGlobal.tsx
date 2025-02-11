@@ -1,7 +1,5 @@
 "use client";
 
-//TODO: Add Orders and Suppliers
-
 import { Button } from "@/components/ui/atoms/button";
 import {
   Tabs,
@@ -13,7 +11,6 @@ import { useOrders } from "@/lib/hooks/UseOrders";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { useSuppliers } from "@/lib/hooks/UseSuppliers";
 import { Order, Product, Shop, Supplier, User } from "@prisma/client";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import OrdersTable from "../orders/OrdersTable";
@@ -68,7 +65,6 @@ const DashboardGlobal = ({
   totalProductsCount,
   initialOrders,
 }: DashboardGlobalProps) => {
-  const { data: session } = useSession();
   const {
     products,
     handleDeleteProduct,
@@ -245,7 +241,6 @@ const DashboardGlobal = ({
         <TabsContent value="orders">
           <OrdersTable
             shopId={shops[0].id}
-            userId={session?.user?.id || ""}
             orders={orders || []}
             products={products}
             suppliers={suppliers}

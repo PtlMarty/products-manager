@@ -1,7 +1,5 @@
 "use server";
 
-// TODO: add the sign in action
-
 import { executeAction } from "@/lib/actions/executeAction";
 import db from "@/lib/db/db";
 import { schema } from "@/lib/validation/zodSchema";
