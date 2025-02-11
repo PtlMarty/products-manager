@@ -21,7 +21,7 @@ const SignUpPage = async () => {
 
   return (
     <div className="w-full h-screen flex items-center justify-center">
-      <div className="w-full max-w-sm mx-auto space-y-6">
+      <div className="w-full max-w-sm mx-auto space-y-3">
         <h1 className="text-2xl font-bold text-center mb-6">Create Account</h1>
 
         <form action={action} className="space-y-4">
@@ -52,10 +52,11 @@ const SignUpPage = async () => {
         <div className="text-sm text-gray-500 flex flex-col text-center">
           To try this app, Sign-in with the following credentials:
           <p>
-            <code className="text-gray-900">email: admin@test.com</code>
-          </p>
-          <p>
-            <code className="text-gray-900">password: admin123</code>
+            <code className="text-gray-900">
+              user@example.com
+              <br />
+              password: user123
+            </code>
           </p>
           <br />
           <br />

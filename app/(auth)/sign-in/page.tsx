@@ -9,14 +9,14 @@ export default async function SignInPage() {
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <SignInForm />
-
-      <div className="text-sm text-gray-500 flex flex-col text-center">
+      <div className="text-sm text-gray-500 flex flex-col text-center mt-2">
         To try this app, Sign-in with the following credentials:
         <p>
-          <code className="text-gray-900">email: admin@test.com</code>
-        </p>
-        <p>
-          <code className="text-gray-900">password: admin123</code>
+          <code className="text-gray-900">
+            user@example.com
+            <br />
+            password: user123
+          </code>
         </p>
         <br />
         <br />
