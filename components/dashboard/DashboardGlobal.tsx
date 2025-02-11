@@ -75,7 +75,7 @@ const DashboardGlobal = ({
   } = useProducts(initialProducts);
   const { suppliers, removeSupplier, addSupplier } =
     useSuppliers(initialSuppliers);
-  const { orders } = useOrders(shops[0]?.id);
+  const { orders, handleCreateOrder } = useOrders(shops[0]?.id);
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     monthlyData: [],
     categoryData: [],
@@ -241,6 +241,9 @@ const DashboardGlobal = ({
             shopId={shops[0].id}
             userId={session?.user?.id || ""}
             orders={orders || []}
+            products={products}
+            suppliers={suppliers}
+            onCreate={handleCreateOrder}
           />
         </TabsContent>
       </Tabs>

@@ -1,11 +1,16 @@
 import {
+  createOrder,
   getOrderById,
   getOrdersByShopId,
 } from "@/lib/actions/orders/ordersActions";
-import { Order, User } from "@prisma/client";
+import { Order, OrderItem, User } from "@prisma/client";
 import { useCallback, useEffect, useState } from "react";
 
 type OrderWithUser = Order & { user: User };
+
+type CreateOrderInput = Omit<Order, "id" | "createdAt" | "updatedAt"> & {
+  orderItems: Omit<OrderItem, "id" | "orderId" | "createdAt" | "updatedAt">[];
+};
 
 export const useOrders = (shopId?: string) => {
   const [orders, setOrders] = useState<OrderWithUser[]>([]);
@@ -22,17 +27,15 @@ export const useOrders = (shopId?: string) => {
         setOrders(result.data as OrderWithUser[]);
         return { success: true, data: result.data };
       } else {
-        setError(result.error || "Failed to fetch orders");
-        return { success: false, error: result.error };
+        const errorMsg = result.error || "Failed to fetch orders";
+        setError(errorMsg);
+        return { success: false, error: new Error(errorMsg) };
       }
     } catch (error) {
-      const errorMessage =
+      const errorMsg =
         error instanceof Error ? error.message : "Failed to fetch orders";
-      setError(errorMessage);
-      return {
-        success: false,
-        error: errorMessage,
-      };
+      setError(errorMsg);
+      return { success: false, error: new Error(errorMsg) };
     } finally {
       setLoading(false);
     }
@@ -47,21 +50,44 @@ export const useOrders = (shopId?: string) => {
       if (result.success && result.data) {
         return { success: true, data: result.data };
       } else {
-        setError(result.error || "Failed to fetch order");
-        return { success: false, error: result.error };
+        const errorMsg = result.error || "Failed to fetch order";
+        setError(errorMsg);
+        return { success: false, error: new Error(errorMsg) };
       }
     } catch (error) {
-      const errorMessage =
+      const errorMsg =
         error instanceof Error ? error.message : "Failed to fetch order";
-      setError(errorMessage);
-      return {
-        success: false,
-        error: errorMessage,
-      };
+      setError(errorMsg);
+      return { success: false, error: new Error(errorMsg) };
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const handleCreateOrder = useCallback(
+    async (order: CreateOrderInput) => {
+      try {
+        setLoading(true);
+        const result = await createOrder(order);
+        if (result.success && shopId) {
+          await fetchOrdersByShop(shopId);
+        }
+        return result;
+      } catch (error) {
+        console.error("Error creating order:", error);
+        return {
+          success: false,
+          error:
+            error instanceof Error
+              ? error
+              : new Error("Failed to create order"),
+        };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [shopId, fetchOrdersByShop]
+  );
 
   useEffect(() => {
     if (shopId) {
@@ -73,6 +99,7 @@ export const useOrders = (shopId?: string) => {
     orders,
     loading,
     error,
+    handleCreateOrder,
     setOrders,
     fetchOrdersByShop,
     fetchOrderById,
