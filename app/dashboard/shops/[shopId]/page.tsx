@@ -4,14 +4,18 @@ import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
 import { getSession } from "@/lib/actions/getSession";
 import { getOrdersByShopId } from "@/lib/actions/orders/ordersActions";
 import { getSuppliers } from "@/lib/actions/suppliers/supplierActions";
-import { Order, Shop, User } from "@prisma/client";
+import { Order, Shop, Supplier, User } from "@prisma/client";
 import { redirect } from "next/navigation";
 
 interface PageProps {
   params: Promise<{ shopId: string }>;
 }
 
-type OrderWithUserAndShop = Order & { user: User; shop: Shop };
+type OrderWithUserAndShop = Order & {
+  user: User;
+  shop: Shop;
+  supplier: Supplier;
+};
 
 const ShopPage = async ({ params }: PageProps) => {
   const { shopId } = await params;

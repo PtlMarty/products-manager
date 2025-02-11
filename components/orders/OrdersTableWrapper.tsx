@@ -12,7 +12,7 @@ interface OrdersTableWrapperProps {
   products: Product[];
   suppliers: Supplier[];
   shops?: Shop[];
-  initialOrders: (Order & { user: User; shop: Shop })[];
+  initialOrders: (Order & { user: User; shop: Shop; supplier: Supplier })[];
 }
 
 function OrdersTableContent({

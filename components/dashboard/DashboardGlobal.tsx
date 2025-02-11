@@ -25,7 +25,7 @@ interface DashboardGlobalProps {
   products: Product[];
   suppliers: Supplier[];
   totalProductsCount: number;
-  initialOrders: (Order & { user: User; shop: Shop })[];
+  initialOrders: (Order & { user: User; shop: Shop; supplier: Supplier })[];
 }
 
 interface DashboardData {

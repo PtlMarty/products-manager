@@ -14,7 +14,7 @@ import { BaseTable } from "../ui/organisms/base-table";
 import type { OrderFormData } from "./OrderForm";
 import { OrderForm } from "./OrderForm";
 
-type ExtendedOrder = Order & { user: User; shop: Shop };
+type ExtendedOrder = Order & { user: User; shop: Shop; supplier: Supplier };
 
 interface OrdersTableProps {
   orders: ExtendedOrder[];
@@ -71,8 +71,8 @@ const OrdersTable = ({
       accessor: (order: ExtendedOrder) => order.shop.name,
     },
     {
-      header: "Customer Name",
-      accessor: (order: ExtendedOrder) => order.user.name || "N/A",
+      header: "Supplier Name",
+      accessor: (order: ExtendedOrder) => order.supplier.name || "N/A",
     },
     {
       header: "Order Date",

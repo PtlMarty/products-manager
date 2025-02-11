@@ -6,11 +6,11 @@ import {
   deleteOrder,
   getOrdersByShopId,
 } from "@/lib/actions/orders/ordersActions";
-import { Order, Product, Shop, User } from "@prisma/client";
+import { Order, Product, Shop, Supplier, User } from "@prisma/client";
 import { useCallback, useEffect, useState } from "react";
 
-// Type definition extending Order to include related User and Shop data
-type OrderWithUser = Order & { user: User; shop: Shop };
+// Type definition extending Order to include related User, Shop, and Supplier data
+type OrderWithUser = Order & { user: User; shop: Shop; supplier: Supplier };
 
 // Hook for managing orders with products in a shop context
 export const useOrders = (

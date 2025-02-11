@@ -44,6 +44,7 @@ export async function getOrdersByShopId({ shopId }: GetOrdersByShopIdProps) {
         orderItems: true,
         user: true,
         shop: true,
+        supplier: true,
       },
     });
 

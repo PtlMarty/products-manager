@@ -5,11 +5,15 @@ import { getOrdersByShopId } from "@/lib/actions/orders/ordersActions";
 import { getProductsByShopId } from "@/lib/actions/Shop/getProductsByShopId";
 import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
 import { getSuppliers } from "@/lib/actions/suppliers/supplierActions";
-import { Order, Shop, User } from "@prisma/client";
+import { Order, Shop, Supplier, User } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-type OrderWithUserAndShop = Order & { user: User; shop: Shop };
+type OrderWithUserAndShop = Order & {
+  user: User;
+  shop: Shop;
+  supplier: Supplier;
+};
 
 export default async function Home() {
   const session = await getSession();
