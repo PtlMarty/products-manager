@@ -1,10 +1,25 @@
 "use client";
 
 import { useOrders } from "@/lib/hooks/UseOrders";
-import { Order, Product, Shop, Supplier, User } from "@prisma/client";
+import { createOrderPdf } from "@/lib/utils/orderPdf";
+import {
+  Order,
+  OrderItem,
+  Product,
+  Shop,
+  Supplier,
+  User,
+} from "@prisma/client";
 import { Suspense } from "react";
 import OrdersTable from "./OrdersTable";
 import OrdersTableSkeleton from "./OrdersTableSkeleton";
+
+type ExtendedOrder = Order & {
+  user: User;
+  shop: Shop;
+  supplier: Supplier;
+  orderItems: OrderItem[];
+};
 
 interface OrdersTableWrapperProps {
   shopId: string;
@@ -12,7 +27,7 @@ interface OrdersTableWrapperProps {
   products: Product[];
   suppliers: Supplier[];
   shops?: Shop[];
-  initialOrders: (Order & { user: User; shop: Shop; supplier: Supplier })[];
+  initialOrders: ExtendedOrder[];
 }
 
 function OrdersTableContent({
@@ -26,7 +41,7 @@ function OrdersTableContent({
     shopId,
     shops,
     initialOrders,
-    products || []
+    products
   );
 
   if (!products || !Array.isArray(products)) {
@@ -45,9 +60,67 @@ function OrdersTableContent({
     );
   }
 
-  const handleViewOrder = (order: Order) => {
-    // TODO: Implement view order functionality
-    console.log("View order:", order);
+  const handleViewOrder = async (order: ExtendedOrder) => {
+    try {
+      if (!order.orderItems) {
+        throw new Error("Order items not found");
+      }
+
+      const pdfOrderItems = order.orderItems.map((item) => {
+        const product = products.find((p) => p.id === item.productId) ?? {
+          id: item.productId,
+          name: "Unknown Product",
+          price: 0,
+          stock: 0,
+          shopId: order.shopId,
+          supplierId: order.supplierId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        return {
+          ...item,
+          product,
+        };
+      });
+
+      const pdfOrder = {
+        id: order.id,
+        status: order.status,
+        totalAmount: order.totalAmount,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+        shopId: order.shopId,
+        supplierId: order.supplierId,
+        userId: order.userId,
+        shop: {
+          id: order.shop.id,
+          name: order.shop.name,
+          createdAt: order.shop.createdAt,
+          updatedAt: order.shop.updatedAt,
+        },
+      };
+
+      const pdfBlob = await createOrderPdf(
+        pdfOrder,
+        pdfOrderItems,
+        order.supplier
+      );
+
+      // Create a blob from the PDF data
+      const blob = new Blob([pdfBlob], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+
+      // Open PDF in new tab
+      window.open(url, "_blank");
+
+      // Clean up
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 1000);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("Error generating PDF. Please try again.");
+    }
   };
 
   const handleEditOrder = (order: Order) => {

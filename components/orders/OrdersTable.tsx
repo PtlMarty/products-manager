@@ -2,6 +2,7 @@
 
 import {
   Order,
+  OrderItem,
   OrderStatus,
   Product,
   Shop,
@@ -14,7 +15,12 @@ import { BaseTable } from "../ui/organisms/base-table";
 import type { OrderFormData } from "./OrderForm";
 import { OrderForm } from "./OrderForm";
 
-type ExtendedOrder = Order & { user: User; shop: Shop; supplier: Supplier };
+type ExtendedOrder = Order & {
+  user: User;
+  shop: Shop;
+  supplier: Supplier;
+  orderItems: OrderItem[];
+};
 
 interface OrdersTableProps {
   orders: ExtendedOrder[];
@@ -25,9 +31,9 @@ interface OrdersTableProps {
   onCreate: (
     order: OrderFormData
   ) => Promise<{ success: boolean; data?: Order; error?: Error }>;
-  onDelete?: (order: Order) => void;
-  onEdit?: (order: Order) => void;
-  onView?: (order: Order) => void;
+  onDelete?: (order: ExtendedOrder) => void;
+  onEdit?: (order: ExtendedOrder) => void;
+  onView?: (order: ExtendedOrder) => void;
 }
 
 const OrdersTable = ({

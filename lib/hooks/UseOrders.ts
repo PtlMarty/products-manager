@@ -6,28 +6,39 @@ import {
   deleteOrder,
   getOrdersByShopId,
 } from "@/lib/actions/orders/ordersActions";
-import { Order, Product, Shop, Supplier, User } from "@prisma/client";
+import {
+  Order,
+  OrderItem,
+  Product,
+  Shop,
+  Supplier,
+  User,
+} from "@prisma/client";
 import { useCallback, useEffect, useState } from "react";
 
 // Type definition extending Order to include related User, Shop, and Supplier data
-type OrderWithUser = Order & { user: User; shop: Shop; supplier: Supplier };
+type ExtendedOrder = Order & {
+  user: User;
+  shop: Shop;
+  supplier: Supplier;
+  orderItems: OrderItem[];
+};
 
 // Hook for managing orders with products in a shop context
 export const useOrders = (
   shopId: string, // ID of the current shop
-  allShops: Shop[] | undefined, // List of all available shops
-  initialOrders: OrderWithUser[], // Initial orders data
-  initialProducts: Product[] // Initial products data
+  shops?: Shop[], // List of all available shops
+  initialOrders?: ExtendedOrder[], // Initial orders data
+  initialProducts?: Product[] // Initial products data
 ) => {
   // State management for orders and products
-  const [orders, setOrders] = useState<OrderWithUser[]>(initialOrders);
-  const [currentProducts, setCurrentProducts] =
-    useState<Product[]>(initialProducts);
+  const [orders, setOrders] = useState<ExtendedOrder[]>(initialOrders || []);
+  const [products, setProducts] = useState<Product[]>(initialProducts || []);
 
   // Update products when initial data changes
   useEffect(() => {
     if (initialProducts && Array.isArray(initialProducts)) {
-      setCurrentProducts(initialProducts);
+      setProducts(initialProducts);
     }
   }, [initialProducts]);
 
@@ -36,7 +47,7 @@ export const useOrders = (
     async (formData: OrderFormData) => {
       try {
         // Validate product availability
-        if (!currentProducts?.length) {
+        if (!products?.length) {
           throw new Error("No products available");
         }
 
@@ -47,7 +58,7 @@ export const useOrders = (
 
         // Map and validate each product in the order
         const orderProducts = formData.orderItems.create.map((item) => {
-          const product = currentProducts.find((p) => p.id === item.productId);
+          const product = products.find((p) => p.id === item.productId);
           if (!product) {
             throw new Error(`Product not found: ${item.productId}`);
           }
@@ -74,7 +85,7 @@ export const useOrders = (
         if (result.success) {
           const refreshResult = await getOrdersByShopId({ shopId });
           if (refreshResult.success && refreshResult.data) {
-            setOrders(refreshResult.data as OrderWithUser[]);
+            setOrders(refreshResult.data as ExtendedOrder[]);
           }
         }
         return result;
@@ -89,7 +100,7 @@ export const useOrders = (
         };
       }
     },
-    [shopId, currentProducts]
+    [shopId, products]
   );
 
   // Handler for deleting orders
@@ -100,7 +111,7 @@ export const useOrders = (
         if (result.success) {
           const refreshResult = await getOrdersByShopId({ shopId });
           if (refreshResult.success && refreshResult.data) {
-            setOrders(refreshResult.data as OrderWithUser[]);
+            setOrders(refreshResult.data as ExtendedOrder[]);
           }
         }
         return result;
