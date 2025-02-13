@@ -11,7 +11,14 @@ import {
 import { useOrders } from "@/lib/hooks/UseOrders";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { useSuppliers } from "@/lib/hooks/UseSuppliers";
-import { Order, Product, Shop, Supplier, User } from "@prisma/client";
+import {
+  Order,
+  OrderItem,
+  Product,
+  Shop,
+  Supplier,
+  User,
+} from "@prisma/client";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import OrdersTable from "../orders/OrdersTable";
@@ -25,7 +32,12 @@ interface DashboardGlobalProps {
   products: Product[];
   suppliers: Supplier[];
   totalProductsCount: number;
-  initialOrders: (Order & { user: User; shop: Shop; supplier: Supplier })[];
+  initialOrders: (Order & {
+    user: User;
+    shop: Shop;
+    supplier: Supplier;
+    orderItems: OrderItem[];
+  })[];
 }
 
 interface DashboardData {

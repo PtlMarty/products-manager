@@ -195,14 +195,6 @@ export function OrderForm({
   initialData,
   standalone = true,
 }: OrderFormProps) {
-  console.log("[OrderForm] Received props:", {
-    shopId,
-    productsLength: products?.length || 0,
-    shopsLength: shops?.length || 0,
-    hasSession: !!session,
-    hasInitialData: !!initialData,
-  });
-
   // Form state management
   const [formData, setFormData] = useState<OrderFormData>(
     initialData
@@ -230,7 +222,6 @@ export function OrderForm({
   }
 
   if (products.length === 0) {
-    console.log("[OrderForm] No products available");
     return (
       <div className="p-4 text-center text-gray-500">
         Cannot create order: No products available.
@@ -249,11 +240,6 @@ export function OrderForm({
     setIsLoading(true);
 
     try {
-      console.log("[handleSubmit] Starting submission with:", {
-        formData,
-        products: products.map((p) => ({ id: p.id, name: p.name })),
-      });
-
       // Validation checks
       if (!formData) {
         throw new Error("Form data is missing");
@@ -273,7 +259,6 @@ export function OrderForm({
         if (!product) {
           throw new Error(`Product not found: ${item.productId}`);
         }
-        console.log("[handleSubmit] Validated product:", product);
         return {
           productId: item.productId,
           quantity: item.quantity,
@@ -294,11 +279,8 @@ export function OrderForm({
         },
       };
 
-      console.log("[handleSubmit] Submitting order data:", orderData);
-
       // Submit order and handle response
       const result = await onSubmit(orderData);
-      console.log("[handleSubmit] Submit result:", result);
 
       if (result.success) {
         setFormData({ ...initialState, shopId });

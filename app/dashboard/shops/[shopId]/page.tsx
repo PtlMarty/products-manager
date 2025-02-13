@@ -4,7 +4,7 @@ import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
 import { getSession } from "@/lib/actions/getSession";
 import { getOrdersByShopId } from "@/lib/actions/orders/ordersActions";
 import { getSuppliers } from "@/lib/actions/suppliers/supplierActions";
-import { Order, Shop, Supplier, User } from "@prisma/client";
+import { Order, OrderItem, Shop, Supplier, User } from "@prisma/client";
 import { redirect } from "next/navigation";
 
 interface PageProps {
@@ -15,6 +15,7 @@ type OrderWithUserAndShop = Order & {
   user: User;
   shop: Shop;
   supplier: Supplier;
+  orderItems: OrderItem[];
 };
 
 const ShopPage = async ({ params }: PageProps) => {

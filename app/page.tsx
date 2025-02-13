@@ -5,7 +5,7 @@ import { getOrdersByShopId } from "@/lib/actions/orders/ordersActions";
 import { getProductsByShopId } from "@/lib/actions/Shop/getProductsByShopId";
 import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
 import { getSuppliers } from "@/lib/actions/suppliers/supplierActions";
-import { Order, Shop, Supplier, User } from "@prisma/client";
+import { Order, OrderItem, Shop, Supplier, User } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -13,6 +13,7 @@ type OrderWithUserAndShop = Order & {
   user: User;
   shop: Shop;
   supplier: Supplier;
+  orderItems: OrderItem[];
 };
 
 export default async function Home() {
