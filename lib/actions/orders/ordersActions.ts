@@ -2,10 +2,10 @@
 
 // TODO: add actions for orders edit, delete, update
 
-import { auth } from "@/lib/auth";
-import db from "@/lib/db/db";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { auth } from "../../auth";
+import db from "../../db/db";
 
 // Interface definitions for action parameters
 interface GetOrdersByShopIdProps {
