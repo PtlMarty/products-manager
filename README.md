@@ -34,6 +34,11 @@ supply-chain/
    ```bash
    pnpm install
    ```
+   if pnpm is not install , please 
+
+   ```bash
+   run npm install -g pnpm
+   ```
 4. Run database migrations:
    ```bash
    pnpm prisma migrate dev
