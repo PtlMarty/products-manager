@@ -5,15 +5,15 @@ import { getOrdersByShopId } from "@/lib/actions/orders/ordersActions";
 import { getProductsByShopId } from "@/lib/actions/Shop/getProductsByShopId";
 import { getShopsByUserId } from "@/lib/actions/Shop/getShopsByUserId";
 import { getSuppliers } from "@/lib/actions/suppliers/supplierActions";
-import { Order, OrderItem, Shop, Supplier, User } from "@prisma/client";
+import { OrderWithRelations, Shop } from "@/types/prisma";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-type OrderWithUserAndShop = Order & {
-  user: User;
-  shop: Shop;
-  supplier: Supplier;
-  orderItems: OrderItem[];
+// Define a type for the result object
+type OrderResult = {
+  success: boolean;
+  data?: OrderWithRelations[];
+  error?: string;
 };
 
 export default async function Home() {
@@ -31,15 +31,15 @@ export default async function Home() {
   const suppliers = await getSuppliers();
 
   // Fetch initial orders for all shops
-  const ordersPromises = shops.map((shop) =>
+  const ordersPromises = shops.map((shop: Shop) =>
     getOrdersByShopId({ shopId: shop.id })
   );
   const ordersResults = await Promise.all(ordersPromises);
   const initialOrders = ordersResults
-    .filter((result) => result.success && result.data)
-    .flatMap((result) => result.data as OrderWithUserAndShop[])
+    .filter((result: OrderResult) => result.success && result.data)
+    .flatMap((result: OrderResult) => result.data as OrderWithRelations[])
     .sort(
-      (a, b) =>
+      (a: OrderWithRelations, b: OrderWithRelations) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
     .slice(0, 10);
@@ -52,7 +52,7 @@ export default async function Home() {
           <h2 className="text-xl font-semibold mb-4">Your Shops</h2>
           <div className="flex flex-wrap gap-3">
             {shops.length > 0 ? (
-              shops.map((shop) => (
+              shops.map((shop: Shop) => (
                 <Link
                   key={shop.id}
                   href={`/dashboard/shops/${shop.id}`}

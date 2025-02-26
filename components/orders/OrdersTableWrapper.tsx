@@ -9,7 +9,7 @@ import {
   Shop,
   Supplier,
   User,
-} from "@prisma/client";
+} from "@/types/prisma";
 import { Suspense } from "react";
 import OrdersTable from "./OrdersTable";
 import OrdersTableSkeleton from "./OrdersTableSkeleton";
@@ -66,7 +66,7 @@ function OrdersTableContent({
         throw new Error("Order items not found");
       }
 
-      const pdfOrderItems = order.orderItems.map((item) => {
+      const pdfOrderItems = order.orderItems.map((item: OrderItem) => {
         const product = products.find((p) => p.id === item.productId) ?? {
           id: item.productId,
           name: "Unknown Product",
